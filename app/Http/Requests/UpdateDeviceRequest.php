@@ -64,9 +64,13 @@ class UpdateDeviceRequest extends FormRequest
             */
             'specs' => ['nullable', 'array'],
             'specs.os' => ['nullable', 'string', 'max:255'],
+            'specs.os_version' => ['nullable', 'string', 'max:255'],
+            'specs.os_license' => ['nullable', 'string', 'max:255'],
             'specs.memory' => ['nullable', 'string', 'max:255'],
             'specs.storage' => ['nullable', 'string', 'max:255'],
             'specs.form_factor' => ['nullable', 'string', 'max:255'],
+            'specs.office_version' => ['nullable', 'string', 'max:255'],
+            'specs.office_license' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -82,9 +86,13 @@ class UpdateDeviceRequest extends FormRequest
             'serial_number.max' => 'The serial number must not exceed 255 characters.',
 
             'specs.os.max' => 'The operating system field must not exceed 255 characters.',
+            'specs.os_version.max' => 'The operating system version field must not exceed 255 characters.',
+            'specs.os_license.max' => 'The operating system license field must not exceed 255 characters.',
             'specs.memory.max' => 'The memory field must not exceed 255 characters.',
             'specs.storage.max' => 'The storage field must not exceed 255 characters.',
             'specs.form_factor.max' => 'The form factor field must not exceed 255 characters.',
+            'specs.office_version.max' => 'The Microsoft Office field must not exceed 255 characters.',
+            'specs.office_license.max' => 'The Microsoft Office license field must not exceed 255 characters.',
         ];
     }
 }

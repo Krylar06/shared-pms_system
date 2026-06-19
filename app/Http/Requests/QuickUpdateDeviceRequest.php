@@ -42,9 +42,13 @@ class QuickUpdateDeviceRequest extends FormRequest
 
             'specs'              => ['nullable', 'array'],
             'specs.os'           => ['nullable', 'string', 'max:255'],
+            'specs.os_version'   => ['nullable', 'string', 'max:255'],
+            'specs.os_license'   => ['nullable', 'string', 'max:255'],
             'specs.memory'       => ['nullable', 'string', 'max:255'],
             'specs.storage'      => ['nullable', 'string', 'max:255'],
             'specs.form_factor'  => ['nullable', 'string', 'max:255'],
+            'specs.office_version' => ['nullable', 'string', 'max:255'],
+            'specs.office_license' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
