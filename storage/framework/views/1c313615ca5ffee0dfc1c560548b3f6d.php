@@ -1,10 +1,8 @@
-@extends('admin.layouts.app')
+<?php $__env->startSection('title', 'Colleges'); ?>
+<?php $__env->startSection('page_title', 'Colleges'); ?>
 
-@section('title', 'Colleges')
-@section('page_title', 'Colleges')
-
-@section('content')
-@php
+<?php $__env->startSection('content'); ?>
+<?php
     $addBag = $errors->getBag('add');
     $editBag = $errors->getBag('edit');
 
@@ -21,30 +19,30 @@
             'codeError' => $addBag->first("codes.$i"),
         ];
     }
-@endphp
+?>
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('collegeManager', () => ({
-        addOpen: {{ $addBag->any() ? 'true' : 'false' }},
-        editOpen: {{ $editBag->any() ? 'true' : 'false' }},
+        addOpen: <?php echo e($addBag->any() ? 'true' : 'false'); ?>,
+        editOpen: <?php echo e($editBag->any() ? 'true' : 'false'); ?>,
         deleteOpen: false,
-        bulkEnabled: {{ old('names') !== null ? 'true' : 'false' }},
+        bulkEnabled: <?php echo e(old('names') !== null ? 'true' : 'false'); ?>,
 
         addSingle: {
-            name: @js(old('name', '')),
-            code: @js(old('code', '')),
-            nameError: @js($addBag->first('name')),
-            codeError: @js($addBag->first('code'))
+            name: <?php echo \Illuminate\Support\Js::from(old('name', ''))->toHtml() ?>,
+            code: <?php echo \Illuminate\Support\Js::from(old('code', ''))->toHtml() ?>,
+            nameError: <?php echo \Illuminate\Support\Js::from($addBag->first('name'))->toHtml() ?>,
+            codeError: <?php echo \Illuminate\Support\Js::from($addBag->first('code'))->toHtml() ?>
         },
 
-        bulkRows: @json($bulkRowsSeed),
+        bulkRows: <?php echo json_encode($bulkRowsSeed, 15, 512) ?>,
 
         editCollege: {
-            id: @js(old('editing_id') !== null ? (int) old('editing_id') : null),
-            name: @js(old('name', '')),
-            code: @js(old('code', '')),
-            nameError: @js($editBag->first('name')),
-            codeError: @js($editBag->first('code'))
+            id: <?php echo \Illuminate\Support\Js::from(old('editing_id') !== null ? (int) old('editing_id') : null)->toHtml() ?>,
+            name: <?php echo \Illuminate\Support\Js::from(old('name', ''))->toHtml() ?>,
+            code: <?php echo \Illuminate\Support\Js::from(old('code', ''))->toHtml() ?>,
+            nameError: <?php echo \Illuminate\Support\Js::from($editBag->first('name'))->toHtml() ?>,
+            codeError: <?php echo \Illuminate\Support\Js::from($editBag->first('code'))->toHtml() ?>
         },
         deleteCollegeId: null,
 
@@ -95,7 +93,7 @@ document.addEventListener('alpine:init', () => {
 >
     
 
-    {{-- Top section --}}
+    
     <div class="flex items-start justify-between gap-3">
         <div>
             <h1 class="text-2xl font-semibold text-gray-900">Colleges</h1>
@@ -110,23 +108,24 @@ document.addEventListener('alpine:init', () => {
         </button>
     </div>
 
-    {{-- Mobile cards --}}
+    
     <div class="grid grid-cols-1 gap-3 md:hidden">
-        @forelse ($colleges as $c)
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $colleges; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
             <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div class="space-y-3">
                     <div>
                         <a
                             class="font-semibold text-blue-700 hover:underline"
-                            href="{{ route('admin.offices.index', $c) }}"
+                            href="<?php echo e(route('admin.offices.index', $c)); ?>"
                         >
-                            {{ $c->name }}
+                            <?php echo e($c->name); ?>
+
                         </a>
                     </div>
 
                     <div class="text-sm">
                         <div class="text-gray-500">Code</div>
-                        <div class="text-gray-900">{{ $c->code ?: '-' }}</div>
+                        <div class="text-gray-900"><?php echo e($c->code ?: '-'); ?></div>
                     </div>
 
                     <div class="flex flex-wrap gap-2 pt-1">
@@ -134,9 +133,9 @@ document.addEventListener('alpine:init', () => {
                             type="button"
                             class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                             @click="openEdit({
-                                id: {{ $c->id }},
-                                name: @js($c->name),
-                                code: @js($c->code ?? '')
+                                id: <?php echo e($c->id); ?>,
+                                name: <?php echo \Illuminate\Support\Js::from($c->name)->toHtml() ?>,
+                                code: <?php echo \Illuminate\Support\Js::from($c->code ?? '')->toHtml() ?>
                             })"
                         >
                             Edit
@@ -145,21 +144,21 @@ document.addEventListener('alpine:init', () => {
                         <button
                             type="button"
                             class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                            @click="openDelete({{ $c->id }})"
+                            @click="openDelete(<?php echo e($c->id); ?>)"
                         >
                             Delete
                         </button>
                     </div>
                 </div>
             </div>
-        @empty
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm">
                 No colleges found.
             </div>
-        @endforelse
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
-    {{-- Desktop table --}}
+    
     <div class="hidden md:block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
@@ -171,18 +170,19 @@ document.addEventListener('alpine:init', () => {
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    @forelse ($colleges as $c)
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $colleges; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3">
                                 <a
                                     class="font-medium text-blue-700 hover:underline"
-                                    href="{{ route('admin.offices.index', $c) }}"
+                                    href="<?php echo e(route('admin.offices.index', $c)); ?>"
                                 >
-                                    {{ $c->name }}
+                                    <?php echo e($c->name); ?>
+
                                 </a>
                             </td>
 
-                            <td class="px-4 py-3 text-gray-700">{{ $c->code ?: '-' }}</td>
+                            <td class="px-4 py-3 text-gray-700"><?php echo e($c->code ?: '-'); ?></td>
 
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
@@ -190,9 +190,9 @@ document.addEventListener('alpine:init', () => {
                                         type="button"
                                         class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                         @click="openEdit({
-                                            id: {{ $c->id }},
-                                            name: @js($c->name),
-                                            code: @js($c->code ?? '')
+                                            id: <?php echo e($c->id); ?>,
+                                            name: <?php echo \Illuminate\Support\Js::from($c->name)->toHtml() ?>,
+                                            code: <?php echo \Illuminate\Support\Js::from($c->code ?? '')->toHtml() ?>
                                         })"
                                     >
                                         Edit
@@ -201,33 +201,45 @@ document.addEventListener('alpine:init', () => {
                                     <button
                                         type="button"
                                         class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                        @click="openDelete({{ $c->id }})"
+                                        @click="openDelete(<?php echo e($c->id); ?>)"
                                     >
                                         Delete
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                    @empty
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="3" class="px-6 py-8 text-center text-gray-500">
                                 No colleges found.
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div>
-        {{ $colleges->links() }}
+        <?php echo e($colleges->links()); ?>
+
     </div>
 
-    {{-- Add modal --}}
-    <x-modal show="addOpen" title="Add College">
-        <form method="POST" action="{{ route('admin.colleges.store') }}" class="space-y-3">
-            @csrf
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'addOpen','title' => 'Add College']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'addOpen','title' => 'Add College']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+        <form method="POST" action="<?php echo e(route('admin.colleges.store')); ?>" class="space-y-3">
+            <?php echo csrf_field(); ?>
 
             <div>
                 <div class="flex items-center justify-between gap-3">
@@ -342,19 +354,39 @@ document.addEventListener('alpine:init', () => {
 
             
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
 
-    {{-- Edit modal --}}
-    <x-modal show="editOpen" title="Edit College" >
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'editOpen','title' => 'Edit College']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'editOpen','title' => 'Edit College']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
         <form
             method="POST"
-            action="{{ route('admin.colleges.update', '__ID__') }}"
-            x-bind:action="'{{ route('admin.colleges.update', '__ID__') }}'.replace('__ID__', editCollege.id)"
+            action="<?php echo e(route('admin.colleges.update', '__ID__')); ?>"
+            x-bind:action="'<?php echo e(route('admin.colleges.update', '__ID__')); ?>'.replace('__ID__', editCollege.id)"
             class="space-y-3"
         >
-            @csrf
-            @method('PUT')
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
 
             <input type="hidden" name="editing_id" :value="editCollege.id">
 
@@ -386,10 +418,30 @@ document.addEventListener('alpine:init', () => {
                 </button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- Delete modal --}}
-    <x-modal show="deleteOpen" title="Delete College">
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'deleteOpen','title' => 'Delete College']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'deleteOpen','title' => 'Delete College']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
         <div class="space-y-3">
             <div class="text-sm text-gray-700">
                 Are you sure you want to delete this college?
@@ -399,13 +451,13 @@ document.addEventListener('alpine:init', () => {
 
             <form
                 method="POST"
-                :action="`{{ route('admin.colleges.destroy', ['college' => '__ID__']) }}`.replace('__ID__', deleteCollegeId)"
+                :action="`<?php echo e(route('admin.colleges.destroy', ['college' => '__ID__'])); ?>`.replace('__ID__', deleteCollegeId)"
                 @submit="if (!deleteCollegeId) $event.preventDefault()"
                 class="flex gap-2"
             >
 
-                @csrf
-                @method('DELETE')
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
 
                 <button type="submit" x-ref="confirmDeleteBtn" class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">Confirm</button>
 
@@ -414,6 +466,16 @@ document.addEventListener('alpine:init', () => {
                 </button>
             </form>
         </div>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\xampp\htdocs\PMS_system\resources\views/admin/colleges/index.blade.php ENDPATH**/ ?>

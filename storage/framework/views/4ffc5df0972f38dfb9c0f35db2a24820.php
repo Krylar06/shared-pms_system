@@ -1,19 +1,17 @@
-@extends('admin.layouts.app')
+<?php $__env->startSection('title', 'Issued Devices'); ?>
+<?php $__env->startSection('page_title', 'Issued Devices'); ?>
 
-@section('title', 'Issued Devices')
-@section('page_title', 'Issued Devices')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div
     x-data="{
-        issueOpen: {{ $errors->has('device_id') ? 'true' : 'false' }},
+        issueOpen: <?php echo e($errors->has('device_id') ? 'true' : 'false'); ?>,
         editOpen: false,
         deleteOpen: false,
 
         deviceSearch: '',
         selectedDevice: null,
 
-        availableDevices: @js(
+        availableDevices: <?php echo \Illuminate\Support\Js::from(
             $availableDevices->map(function ($device) {
                 return [
                     'id' => $device->id,
@@ -24,7 +22,7 @@
                     'status' => $device->status,
                 ];
             })->values()
-        ),
+        )->toHtml() ?>,
 
         editDevice: {
             id: null,
@@ -102,28 +100,31 @@
     }"
     class="space-y-5"
 >
-    {{-- Breadcrumb --}}
+    
     <div class="text-sm text-gray-500 leading-6 break-words">
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.colleges.index') }}">
+        <a class="text-blue-600 hover:underline" href="<?php echo e(route('admin.colleges.index')); ?>">
             Colleges
         </a>
 
         <span class="mx-1">/</span>
 
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.offices.index', $staff->office->college) }}">
-            {{ $staff->office->college->name }}
+        <a class="text-blue-600 hover:underline" href="<?php echo e(route('admin.offices.index', $staff->office->college)); ?>">
+            <?php echo e($staff->office->college->name); ?>
+
         </a>
 
         <span class="mx-1">/</span>
 
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.staff.index', $staff->office) }}">
-            {{ $staff->office->name }}
+        <a class="text-blue-600 hover:underline" href="<?php echo e(route('admin.staff.index', $staff->office)); ?>">
+            <?php echo e($staff->office->name); ?>
+
         </a>
 
         <span class="mx-1">/</span>
 
         <span class="font-medium text-gray-700">
-            {{ $staff->last_name }}, {{ $staff->first_name }}
+            <?php echo e($staff->last_name); ?>, <?php echo e($staff->first_name); ?>
+
         </span>
 
         <span class="mx-1">/</span>
@@ -131,7 +132,7 @@
         <span>Issued Devices</span>
     </div>
 
-    {{-- Header --}}
+    
     <div class="flex items-start justify-between gap-3">
         <div>
             <h1 class="text-2xl font-semibold text-gray-900">
@@ -148,96 +149,107 @@
         </button>
     </div>
 
-    {{-- Alerts --}}
-    @if(session('success'))
+    
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
         <div class="rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">
-            {{ session('success') }}
-        </div>
-    @endif
+            <?php echo e(session('success')); ?>
 
-    @if(session('error'))
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
         <div class="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
-            {{ session('error') }}
-        </div>
-    @endif
+            <?php echo e(session('error')); ?>
 
-    @if(session('info'))
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('info')): ?>
         <div class="rounded-xl bg-blue-100 px-4 py-3 text-sm text-blue-700">
-            {{ session('info') }}
-        </div>
-    @endif
+            <?php echo e(session('info')); ?>
 
-    {{-- Mobile cards --}}
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    
     <div class="grid grid-cols-1 gap-3 md:hidden">
-        @forelse($issued as $assignment)
-            @php
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $issued; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $assignment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+            <?php
                 $dev = $assignment->device;
                 $typeName = $dev?->type?->name ?? 'Device';
                 $isComputer = in_array(strtolower($typeName), ['desktop', 'laptop']);
-            @endphp
+            ?>
 
-            @if($dev)
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev): ?>
                 <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="space-y-3">
                         <div>
                             <div class="text-xs font-medium uppercase text-gray-500">
-                                {{ $typeName }}
+                                <?php echo e($typeName); ?>
+
                             </div>
 
                             <a
-                                href="{{ route('admin.devices.show', $dev) }}"
+                                href="<?php echo e(route('admin.devices.show', $dev)); ?>"
                                 class="mt-1 block text-base font-semibold text-blue-600 hover:underline"
                             >
-                                {{ $dev->property_number }}
+                                <?php echo e($dev->property_number); ?>
+
                             </a>
 
                             <div class="mt-1 text-sm text-gray-600">
-                                {{ $dev->brand ?: '-' }}
-                                @if($dev->model)
-                                    • {{ $dev->model }}
-                                @endif
+                                <?php echo e($dev->brand ?: '-'); ?>
+
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev->model): ?>
+                                    • <?php echo e($dev->model); ?>
+
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                         </div>
 
-                        @if($isComputer && $dev->mac_address)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isComputer && $dev->mac_address): ?>
                             <div>
                                 <div class="text-xs text-gray-500">MAC Address</div>
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ $dev->mac_address }}
+                                    <?php echo e($dev->mac_address); ?>
+
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         <div>
                             <div class="text-xs text-gray-500">Issued At</div>
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $assignment->issued_at ? $assignment->issued_at->format('Y-m-d H:i') : '-' }}
+                                <?php echo e($assignment->issued_at ? $assignment->issued_at->format('Y-m-d H:i') : '-'); ?>
+
                             </div>
                         </div>
 
                         <div>
                             <div class="text-xs text-gray-500">Last Maintenance</div>
 
-                            @if($dev->last_maintenance_date)
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev->last_maintenance_date): ?>
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ $dev->last_maintenance_date->format('M d, Y') }}
+                                    <?php echo e($dev->last_maintenance_date->format('M d, Y')); ?>
+
                                 </div>
 
-                                @if($dev->maintenance_remarks)
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev->maintenance_remarks): ?>
                                     <div class="text-xs text-gray-500">
-                                        {{ $dev->maintenance_remarks }}
+                                        <?php echo e($dev->maintenance_remarks); ?>
+
                                     </div>
-                                @endif
-                            @else
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php else: ?>
                                 <div class="text-sm text-gray-400">
                                     Not yet checked
                                 </div>
-                            @endif
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         <div class="flex flex-wrap gap-2 pt-2">
-                            <form method="POST" action="{{ route('admin.staff.devices.return', [$staff, $assignment]) }}">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('admin.staff.devices.return', [$staff, $assignment])); ?>">
+                                <?php echo csrf_field(); ?>
 
                                 <button
                                     type="submit"
@@ -248,9 +260,9 @@
                                 </button>
                             </form>
 
-                            <form method="POST" action="{{ route('admin.devices.markChecked', $dev) }}">
-                                @csrf
-                                @method('PATCH')
+                            <form method="POST" action="<?php echo e(route('admin.devices.markChecked', $dev)); ?>">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('PATCH'); ?>
 
                                 <button
                                     type="submit"
@@ -261,7 +273,7 @@
                             </form>
 
                             <a
-                                href="{{ route('admin.devices.history', $dev) }}"
+                                href="<?php echo e(route('admin.devices.history', $dev)); ?>"
                                 class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
                             >
                                 History
@@ -271,20 +283,20 @@
                                 type="button"
                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                                 @click="openEdit({
-                                    id: {{ $dev->id }},
-                                    device_type_id: @js($dev->device_type_id),
-                                    type_name: @js($typeName),
-                                    property_number: @js($dev->property_number),
-                                    brand: @js($dev->brand ?? ''),
-                                    model: @js($dev->model ?? ''),
-                                    mac_address: @js($dev->mac_address ?? ''),
-                                    unit_price: @js($dev->unit_price ?? ''),
-                                    date_acquired: @js($dev->date_acquired ? $dev->date_acquired->format('Y-m-d') : ''),
-                                    last_maintenance_date: @js($dev->last_maintenance_date ? $dev->last_maintenance_date->format('Y-m-d') : ''),
-                                    maintenance_remarks: @js($dev->maintenance_remarks ?? ''),
-                                    status: @js($dev->status ?? ''),
-                                    notes: @js($dev->notes ?? ''),
-                                    specs: @js(['os' => data_get($dev->specs, 'os', '')])
+                                    id: <?php echo e($dev->id); ?>,
+                                    device_type_id: <?php echo \Illuminate\Support\Js::from($dev->device_type_id)->toHtml() ?>,
+                                    type_name: <?php echo \Illuminate\Support\Js::from($typeName)->toHtml() ?>,
+                                    property_number: <?php echo \Illuminate\Support\Js::from($dev->property_number)->toHtml() ?>,
+                                    brand: <?php echo \Illuminate\Support\Js::from($dev->brand ?? '')->toHtml() ?>,
+                                    model: <?php echo \Illuminate\Support\Js::from($dev->model ?? '')->toHtml() ?>,
+                                    mac_address: <?php echo \Illuminate\Support\Js::from($dev->mac_address ?? '')->toHtml() ?>,
+                                    unit_price: <?php echo \Illuminate\Support\Js::from($dev->unit_price ?? '')->toHtml() ?>,
+                                    date_acquired: <?php echo \Illuminate\Support\Js::from($dev->date_acquired ? $dev->date_acquired->format('Y-m-d') : '')->toHtml() ?>,
+                                    last_maintenance_date: <?php echo \Illuminate\Support\Js::from($dev->last_maintenance_date ? $dev->last_maintenance_date->format('Y-m-d') : '')->toHtml() ?>,
+                                    maintenance_remarks: <?php echo \Illuminate\Support\Js::from($dev->maintenance_remarks ?? '')->toHtml() ?>,
+                                    status: <?php echo \Illuminate\Support\Js::from($dev->status ?? '')->toHtml() ?>,
+                                    notes: <?php echo \Illuminate\Support\Js::from($dev->notes ?? '')->toHtml() ?>,
+                                    specs: <?php echo \Illuminate\Support\Js::from(['os' => data_get($dev->specs, 'os', '')])->toHtml() ?>
                                 })"
                             >
                                 Edit
@@ -293,22 +305,22 @@
                             <button
                                 type="button"
                                 class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                @click="openDelete({{ $dev->id }})"
+                                @click="openDelete(<?php echo e($dev->id); ?>)"
                             >
                                 Delete
                             </button>
                         </div>
                     </div>
                 </div>
-            @endif
-        @empty
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             <div class="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-500">
                 No issued devices.
             </div>
-        @endforelse
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
-    {{-- Desktop table --}}
+    
     <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block">
         <div class="overflow-x-auto">
             <table class="min-w-full text-left text-sm">
@@ -325,60 +337,67 @@
                 </thead>
 
                 <tbody class="divide-y divide-gray-200">
-                    @forelse($issued as $assignment)
-                        @php
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $issued; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $assignment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <?php
                             $dev = $assignment->device;
                             $typeName = $dev?->type?->name ?? 'Device';
                             $isComputer = in_array(strtolower($typeName), ['desktop', 'laptop']);
-                        @endphp
+                        ?>
 
-                        @if($dev)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev): ?>
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 text-gray-900">
-                                    {{ $typeName }}
+                                    <?php echo e($typeName); ?>
+
                                 </td>
 
                                 <td class="px-4 py-3">
                                     <a
-                                        href="{{ route('admin.devices.show', $dev) }}"
+                                        href="<?php echo e(route('admin.devices.show', $dev)); ?>"
                                         class="font-medium text-blue-600 hover:underline"
                                     >
-                                        {{ $dev->property_number }}
+                                        <?php echo e($dev->property_number); ?>
+
                                     </a>
                                 </td>
 
                                 <td class="px-4 py-3 text-gray-700">
-                                    {{ $dev->brand ?: '-' }}
+                                    <?php echo e($dev->brand ?: '-'); ?>
+
                                 </td>
 
                                 <td class="px-4 py-3 text-gray-700">
-                                    {{ $isComputer ? ($dev->mac_address ?: '-') : '-' }}
+                                    <?php echo e($isComputer ? ($dev->mac_address ?: '-') : '-'); ?>
+
                                 </td>
 
                                 <td class="px-4 py-3 text-gray-700">
-                                    {{ $assignment->issued_at ? $assignment->issued_at->format('Y-m-d H:i') : '-' }}
+                                    <?php echo e($assignment->issued_at ? $assignment->issued_at->format('Y-m-d H:i') : '-'); ?>
+
                                 </td>
 
                                 <td class="px-4 py-3 text-gray-700">
-                                    @if($dev->last_maintenance_date)
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev->last_maintenance_date): ?>
                                         <div class="font-medium text-gray-900">
-                                            {{ $dev->last_maintenance_date->format('M d, Y') }}
+                                            <?php echo e($dev->last_maintenance_date->format('M d, Y')); ?>
+
                                         </div>
 
-                                        @if($dev->maintenance_remarks)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($dev->maintenance_remarks): ?>
                                             <div class="max-w-xs truncate text-xs text-gray-500">
-                                                {{ $dev->maintenance_remarks }}
+                                                <?php echo e($dev->maintenance_remarks); ?>
+
                                             </div>
-                                        @endif
-                                    @else
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                    <?php else: ?>
                                         <span class="text-gray-400">Not yet checked</span>
-                                    @endif
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </td>
 
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
-                                        <form method="POST" action="{{ route('admin.staff.devices.return', [$staff, $assignment]) }}">
-                                            @csrf
+                                        <form method="POST" action="<?php echo e(route('admin.staff.devices.return', [$staff, $assignment])); ?>">
+                                            <?php echo csrf_field(); ?>
 
                                             <button
                                                 type="submit"
@@ -389,9 +408,9 @@
                                             </button>
                                         </form>
 
-                                        <form method="POST" action="{{ route('admin.devices.markChecked', $dev) }}">
-                                            @csrf
-                                            @method('PATCH')
+                                        <form method="POST" action="<?php echo e(route('admin.devices.markChecked', $dev)); ?>">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('PATCH'); ?>
 
                                             <button
                                                 type="submit"
@@ -402,7 +421,7 @@
                                         </form>
 
                                         <a
-                                            href="{{ route('admin.devices.history', $dev) }}"
+                                            href="<?php echo e(route('admin.devices.history', $dev)); ?>"
                                             class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
                                         >
                                             History
@@ -412,20 +431,20 @@
                                             type="button"
                                             class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                                             @click="openEdit({
-                                                id: {{ $dev->id }},
-                                                device_type_id: @js($dev->device_type_id),
-                                                type_name: @js($typeName),
-                                                property_number: @js($dev->property_number),
-                                                brand: @js($dev->brand ?? ''),
-                                                model: @js($dev->model ?? ''),
-                                                mac_address: @js($dev->mac_address ?? ''),
-                                                unit_price: @js($dev->unit_price ?? ''),
-                                                date_acquired: @js($dev->date_acquired ? $dev->date_acquired->format('Y-m-d') : ''),
-                                                last_maintenance_date: @js($dev->last_maintenance_date ? $dev->last_maintenance_date->format('Y-m-d') : ''),
-                                                maintenance_remarks: @js($dev->maintenance_remarks ?? ''),
-                                                status: @js($dev->status ?? ''),
-                                                notes: @js($dev->notes ?? ''),
-                                                specs: @js(['os' => data_get($dev->specs, 'os', '')])
+                                                id: <?php echo e($dev->id); ?>,
+                                                device_type_id: <?php echo \Illuminate\Support\Js::from($dev->device_type_id)->toHtml() ?>,
+                                                type_name: <?php echo \Illuminate\Support\Js::from($typeName)->toHtml() ?>,
+                                                property_number: <?php echo \Illuminate\Support\Js::from($dev->property_number)->toHtml() ?>,
+                                                brand: <?php echo \Illuminate\Support\Js::from($dev->brand ?? '')->toHtml() ?>,
+                                                model: <?php echo \Illuminate\Support\Js::from($dev->model ?? '')->toHtml() ?>,
+                                                mac_address: <?php echo \Illuminate\Support\Js::from($dev->mac_address ?? '')->toHtml() ?>,
+                                                unit_price: <?php echo \Illuminate\Support\Js::from($dev->unit_price ?? '')->toHtml() ?>,
+                                                date_acquired: <?php echo \Illuminate\Support\Js::from($dev->date_acquired ? $dev->date_acquired->format('Y-m-d') : '')->toHtml() ?>,
+                                                last_maintenance_date: <?php echo \Illuminate\Support\Js::from($dev->last_maintenance_date ? $dev->last_maintenance_date->format('Y-m-d') : '')->toHtml() ?>,
+                                                maintenance_remarks: <?php echo \Illuminate\Support\Js::from($dev->maintenance_remarks ?? '')->toHtml() ?>,
+                                                status: <?php echo \Illuminate\Support\Js::from($dev->status ?? '')->toHtml() ?>,
+                                                notes: <?php echo \Illuminate\Support\Js::from($dev->notes ?? '')->toHtml() ?>,
+                                                specs: <?php echo \Illuminate\Support\Js::from(['os' => data_get($dev->specs, 'os', '')])->toHtml() ?>
                                             })"
                                         >
                                             Edit
@@ -434,30 +453,41 @@
                                         <button
                                             type="button"
                                             class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                            @click="openDelete({{ $dev->id }})"
+                                            @click="openDelete(<?php echo e($dev->id); ?>)"
                                         >
                                             Delete
                                         </button>
                                     </div>
                                 </td>
                             </tr>
-                        @endif
-                    @empty
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                                 No issued devices.
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    {{-- ISSUE MODAL --}}
-    <x-modal show="issueOpen" title="Issue a device to {{ $staff->first_name }}">
-        <form method="POST" action="{{ route('admin.staff.devices.issue', $staff) }}" class="space-y-4">
-            @csrf
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'issueOpen','title' => 'Issue a device to '.e($staff->first_name).'']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'issueOpen','title' => 'Issue a device to '.e($staff->first_name).'']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+        <form method="POST" action="<?php echo e(route('admin.staff.devices.issue', $staff)); ?>" class="space-y-4">
+            <?php echo csrf_field(); ?>
 
             <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">
@@ -478,11 +508,19 @@
                     :value="selectedDevice ? selectedDevice.id : ''"
                 >
 
-                @error('device_id')
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['device_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                     <p class="mt-1 text-sm text-red-600">
-                        {{ $message }}
+                        <?php echo e($message); ?>
+
                     </p>
-                @enderror
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
             <div
@@ -585,13 +623,33 @@
                 </button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- EDIT MODAL --}}
-    <x-modal show="editOpen" title="Edit Device">
-        <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4">
-            @csrf
-            @method('PUT')
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'editOpen','title' => 'Edit Device']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'editOpen','title' => 'Edit Device']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+        <form method="POST" :action="`<?php echo e(url('/admin/devices')); ?>/${editDevice.id}`" class="space-y-4">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
 
             <input type="hidden" name="device_type_id" x-model="editDevice.device_type_id">
 
@@ -647,9 +705,9 @@
                 <div x-show="isComputerType(editDevice.type_name)" x-cloak>
                     <label class="text-sm font-medium">Operating System</label>
                     <input
-                        name="specs[os_version]"
+                        name="specs[os]"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.specs.os_version"
+                        x-model="editDevice.specs.os"
                         :disabled="!isComputerType(editDevice.type_name)"
                     >
                 </div>
@@ -735,10 +793,30 @@
                 </button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- DELETE MODAL --}}
-    <x-modal show="deleteOpen" title="Delete Device">
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'deleteOpen','title' => 'Delete Device']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'deleteOpen','title' => 'Delete Device']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
         <div class="space-y-3">
             <div class="text-sm text-gray-700">
                 Are you sure you want to delete this device?
@@ -746,12 +824,12 @@
 
             <form
                 method="POST"
-                :action="`{{ url('/admin/devices') }}/${deleteDeviceId}`"
+                :action="`<?php echo e(url('/admin/devices')); ?>/${deleteDeviceId}`"
                 @submit="if (!deleteDeviceId) $event.preventDefault()"
                 class="flex gap-2"
             >
-                @csrf
-                @method('DELETE')
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
 
                 <button type="submit" x-ref="confirmDeleteBtn" class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">
                     Confirm
@@ -766,6 +844,16 @@
                 </button>
             </form>
         </div>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\xampp\htdocs\PMS_system\resources\views/admin/staff/devices.blade.php ENDPATH**/ ?>

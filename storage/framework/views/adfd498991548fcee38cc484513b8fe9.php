@@ -1,9 +1,7 @@
-@extends('admin.layouts.app')
+<?php $__env->startSection('title', 'Device Manager'); ?>
+<?php $__env->startSection('page_title', 'Device Manager'); ?>
 
-@section('title', 'Device Manager')
-@section('page_title', 'Device Manager')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 
 <div
     x-data="{
@@ -11,14 +9,9 @@
         editOpen: false,
         deleteOpen: false,
 
-        addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
+        addTypeId: '<?php echo e(old('device_type_id', $types->first()?->id)); ?>',
 
-        addOs: '{{ old('specs.os_version', '') }}',
-        addOsLicense: '{{ old('specs.os_license', '') }}',
-        addOffice: '{{ old('specs.office_version', '') }}',
-        addOfficeLicense: '{{ old('specs.office_license', '') }}',
-
-        typeNames: @js($types->pluck('name', 'id')),
+        typeNames: <?php echo \Illuminate\Support\Js::from($types->pluck('name', 'id'))->toHtml() ?>,
 
         editDevice: {
             id: null,
@@ -37,13 +30,9 @@
             condition: 'serviceable',
             specs: {
                 os: '',
-                os_version: '',
-                os_license: '',
                 memory: '',
                 storage: '',
-                form_factor: '',
-                office_version: '',
-                office_license: ''
+                form_factor: ''
             }
         },
 
@@ -61,13 +50,9 @@
         openEdit(device) {
             device.specs = device.specs ?? {};
             device.specs.os = device.specs.os ?? '';
-            device.specs.os_version = device.specs.os_version ?? '';
-            device.specs.os_license = device.specs.os_license ?? '';
             device.specs.memory = device.specs.memory ?? '';
             device.specs.storage = device.specs.storage ?? '';
             device.specs.form_factor = device.specs.form_factor ?? '';
-            device.specs.office_version = device.specs.office_version ?? '';
-            device.specs.office_license = device.specs.office_license ?? '';
             device.serial_number = device.serial_number ?? '';
             device.status = device.status ?? 'available';
             device.condition = device.condition ?? 'serviceable';
@@ -93,15 +78,15 @@
 
         <div class="flex flex-wrap gap-2">
             <a
-               href="{{ route('admin.devices.qr.index') }}"
+               href="<?php echo e(route('admin.devices.qr.index')); ?>"
                class="shrink-0 inline-flex items-center rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700"
             >
                 Generate QR
             </a>
 
             <a
-                href="{{ route('admin.reports.preventiveMaintenance.export') }}"
-                class="shrink-0 inline-flex items-center rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700"
+                href="<?php echo e(route('admin.reports.preventiveMaintenance.export')); ?>"
+                class="shrink-0 inline-flex items-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-700"
             >
                 Export Excel Report
             </a>
@@ -116,18 +101,18 @@
         </div>
     </div>
 
-    @if($errors->any())
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
         <div class="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
             <div class="font-semibold">Please check the form.</div>
             <ul class="mt-1 list-inside list-disc">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                    <li><?php echo e($error); ?></li>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </ul>
         </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-    {{-- Filters --}}
+    
     <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <form method="GET" class="flex flex-col gap-3 lg:flex-row lg:items-center">
             <div class="lg:w-64">
@@ -137,11 +122,12 @@
                 >
                     <option value="">All device types</option>
 
-                    @foreach($types as $t)
-                        <option value="{{ $t->id }}" @selected((int)($typeId ?? 0) === $t->id)>
-                            {{ $t->name }}
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $types; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <option value="<?php echo e($t->id); ?>" <?php if((int)($typeId ?? 0) === $t->id): echo 'selected'; endif; ?>>
+                            <?php echo e($t->name); ?>
+
                         </option>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </select>
             </div>
 
@@ -151,10 +137,10 @@
                     class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 >
                     <option value="">All conditions</option>
-                    <option value="serviceable" @selected(($condition ?? '') === 'serviceable')>
+                    <option value="serviceable" <?php if(($condition ?? '') === 'serviceable'): echo 'selected'; endif; ?>>
                         Serviceable
                     </option>
-                    <option value="unserviceable" @selected(($condition ?? '') === 'unserviceable')>
+                    <option value="unserviceable" <?php if(($condition ?? '') === 'unserviceable'): echo 'selected'; endif; ?>>
                         Unserviceable
                     </option>
                 </select>
@@ -162,7 +148,7 @@
 
             <input
                 name="q"
-                value="{{ $q }}"
+                value="<?php echo e($q); ?>"
                 placeholder="Search property #, serial #..."
                 class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
             >
@@ -176,7 +162,7 @@
                 </button>
 
                 <a
-                    href="{{ route('admin.devices.index') }}"
+                    href="<?php echo e(route('admin.devices.index')); ?>"
                     class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
                 >
                     Reset
@@ -185,125 +171,127 @@
         </form>
     </div>
 
-    {{-- Mobile cards --}}
+    
     <div class="grid grid-cols-1 gap-3 md:hidden">
-        @forelse($devices as $d)
-            @php
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $devices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+            <?php
                 $deviceTypeName = strtolower($d->type?->name ?? '');
                 $isComputer = in_array($deviceTypeName, ['desktop', 'laptop']);
-            @endphp
+            ?>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div class="space-y-3">
                     <div>
                         <div class="text-sm text-gray-500">Type</div>
                         <div class="font-semibold text-gray-900">
-                            {{ $d->type?->name ?? '-' }}
+                            <?php echo e($d->type?->name ?? '-'); ?>
+
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div>
                             <div class="text-gray-500">Property #</div>
-                            <div class="text-gray-900">{{ $d->property_number }}</div>
+                            <div class="text-gray-900"><?php echo e($d->property_number); ?></div>
                         </div>
 
                         <div>
                             <div class="text-gray-500">Serial #</div>
-                            <div class="text-gray-900">{{ $d->serial_number ?: '-' }}</div>
+                            <div class="text-gray-900"><?php echo e($d->serial_number ?: '-'); ?></div>
                         </div>
 
                         <div>
                             <div class="text-gray-500">Acquired</div>
                             <div class="text-gray-900">
-                                {{ $d->date_acquired ? $d->date_acquired->format('M d, Y') : '-' }}
+                                <?php echo e($d->date_acquired ? $d->date_acquired->format('M d, Y') : '-'); ?>
+
                             </div>
                         </div>
 
                         <div>
                             <div class="text-gray-500">Condition</div>
                             <div class="text-gray-900 capitalize">
-                                {{ $d->condition ?? 'serviceable' }}
+                                <?php echo e($d->condition ?? 'serviceable'); ?>
+
                             </div>
                         </div>
 
-                        @if($isComputer)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isComputer): ?>
                             <div>
                                 <div class="text-gray-500">MAC Address</div>
                                 <div class="text-gray-900">
-                                    {{ $d->mac_address ?: '-' }}
+                                    <?php echo e($d->mac_address ?: '-'); ?>
+
                                 </div>
                             </div>
 
                             <div>
                                 <div class="text-gray-500">Operating System</div>
                                 <div class="text-gray-900">
-                                    {{ data_get($d->specs, 'os_version', '-') ?: '-' }}
+                                    <?php echo e(data_get($d->specs, 'os', '-') ?: '-'); ?>
+
                                 </div>
                             </div>
 
                             <div>
                                 <div class="text-gray-500">Memory</div>
                                 <div class="text-gray-900">
-                                    {{ data_get($d->specs, 'memory', '-') ?: '-' }}
+                                    <?php echo e(data_get($d->specs, 'memory', '-') ?: '-'); ?>
+
                                 </div>
                             </div>
 
                             <div>
                                 <div class="text-gray-500">Storage</div>
                                 <div class="text-gray-900">
-                                    {{ data_get($d->specs, 'storage', '-') ?: '-' }}
+                                    <?php echo e(data_get($d->specs, 'storage', '-') ?: '-'); ?>
+
                                 </div>
                             </div>
 
                             <div>
                                 <div class="text-gray-500">Form Factor</div>
                                 <div class="text-gray-900">
-                                    {{ data_get($d->specs, 'form_factor', '-') ?: '-' }}
-                                </div>
-                            </div>
+                                    <?php echo e(data_get($d->specs, 'form_factor', '-') ?: '-'); ?>
 
-                            <div>
-                                <div class="text-gray-500">Microsoft Office</div>
-                                <div class="text-gray-900">
-                                    {{ data_get($d->specs, 'office_version', '-') ?: '-' }}
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         <div>
                             <div class="text-gray-500">Last Maintenance</div>
                             <div class="text-gray-900">
-                                {{ $d->last_maintenance_date ? $d->last_maintenance_date->format('M d, Y') : 'Not yet checked' }}
+                                <?php echo e($d->last_maintenance_date ? $d->last_maintenance_date->format('M d, Y') : 'Not yet checked'); ?>
+
                             </div>
                         </div>
                     </div>
 
-                    @if($d->maintenance_remarks)
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($d->maintenance_remarks): ?>
                         <div class="text-sm">
                             <div class="text-gray-500">Maintenance Remarks</div>
-                            <div class="text-gray-900">{{ $d->maintenance_remarks }}</div>
+                            <div class="text-gray-900"><?php echo e($d->maintenance_remarks); ?></div>
                         </div>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <div class="flex flex-wrap gap-2 pt-1">
                         <a
-                            href="{{ route('admin.devices.show', $d) }}"
+                            href="<?php echo e(route('admin.devices.show', $d)); ?>"
                             class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
                         >
                             View
                         </a>
 
                         <a
-                            href="{{ route('admin.devices.history', $d) }}"
+                            href="<?php echo e(route('admin.devices.history', $d)); ?>"
                             class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
                         >
                             History
                         </a>
 
-                        <form method="POST" action="{{ route('admin.devices.markChecked', $d) }}">
-                            @csrf
-                            @method('PATCH')
+                        <form method="POST" action="<?php echo e(route('admin.devices.markChecked', $d)); ?>">
+                            <?php echo csrf_field(); ?>
+                            <?php echo method_field('PATCH'); ?>
 
                             <button
                                 type="submit"
@@ -317,29 +305,25 @@
                             type="button"
                             class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                             x-on:click="openEdit({
-                                id: {{ $d->id }},
-                                device_type_id: '{{ $d->device_type_id }}',
-                                property_number: @js($d->property_number),
-                                serial_number: @js($d->serial_number ?? ''),
-                                brand: @js($d->brand ?? ''),
-                                model: @js($d->model ?? ''),
-                                mac_address: @js($d->mac_address ?? ''),
-                                unit_price: @js($d->unit_price ?? ''),
-                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                status: @js($d->status ?? 'available'),
-                                condition: @js($d->condition ?? 'serviceable'),
-                                notes: @js($d->notes ?? ''),
+                                id: <?php echo e($d->id); ?>,
+                                device_type_id: '<?php echo e($d->device_type_id); ?>',
+                                property_number: <?php echo \Illuminate\Support\Js::from($d->property_number)->toHtml() ?>,
+                                serial_number: <?php echo \Illuminate\Support\Js::from($d->serial_number ?? '')->toHtml() ?>,
+                                brand: <?php echo \Illuminate\Support\Js::from($d->brand ?? '')->toHtml() ?>,
+                                model: <?php echo \Illuminate\Support\Js::from($d->model ?? '')->toHtml() ?>,
+                                mac_address: <?php echo \Illuminate\Support\Js::from($d->mac_address ?? '')->toHtml() ?>,
+                                unit_price: <?php echo \Illuminate\Support\Js::from($d->unit_price ?? '')->toHtml() ?>,
+                                date_acquired: <?php echo \Illuminate\Support\Js::from($d->date_acquired ? $d->date_acquired->format('Y-m-d') : '')->toHtml() ?>,
+                                last_maintenance_date: <?php echo \Illuminate\Support\Js::from($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : '')->toHtml() ?>,
+                                maintenance_remarks: <?php echo \Illuminate\Support\Js::from($d->maintenance_remarks ?? '')->toHtml() ?>,
+                                status: <?php echo \Illuminate\Support\Js::from($d->status ?? 'available')->toHtml() ?>,
+                                condition: <?php echo \Illuminate\Support\Js::from($d->condition ?? 'serviceable')->toHtml() ?>,
+                                notes: <?php echo \Illuminate\Support\Js::from($d->notes ?? '')->toHtml() ?>,
                                 specs: {
-                                    os: @js(data_get($d->specs, 'os', '')),
-                                    os_version: @js(data_get($d->specs, 'os_version', '')),
-                                    os_license: @js(data_get($d->specs, 'os_license', '')),
-                                    memory: @js(data_get($d->specs, 'memory', '')),
-                                    storage: @js(data_get($d->specs, 'storage', '')),
-                                    form_factor: @js(data_get($d->specs, 'form_factor', '')),
-                                    office_version: @js(data_get($d->specs, 'office_version', '')),
-                                    office_license: @js(data_get($d->specs, 'office_license', ''))
+                                    os: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'os', ''))->toHtml() ?>,
+                                    memory: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'memory', ''))->toHtml() ?>,
+                                    storage: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'storage', ''))->toHtml() ?>,
+                                    form_factor: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'form_factor', ''))->toHtml() ?>
                                 }
                             })"
                         >
@@ -349,21 +333,21 @@
                         <button
                             type="button"
                             class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                            x-on:click="openDelete({{ $d->id }})"
+                            x-on:click="openDelete(<?php echo e($d->id); ?>)"
                         >
                             Delete
                         </button>
                     </div>
                 </div>
             </div>
-        @empty
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm">
                 No devices found.
             </div>
-        @endforelse
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
-    {{-- Desktop table --}}
+    
     <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block">
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
@@ -380,65 +364,72 @@
                 </thead>
 
                 <tbody class="divide-y divide-gray-200">
-                    @forelse($devices as $d)
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $devices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 text-gray-900">
-                                {{ $d->type?->name ?? '-' }}
+                                <?php echo e($d->type?->name ?? '-'); ?>
+
                             </td>
 
                             <td class="px-4 py-3 text-gray-900">
-                                {{ $d->property_number }}
+                                <?php echo e($d->property_number); ?>
+
                             </td>
 
                             <td class="px-4 py-3 text-gray-700">
-                                {{ $d->serial_number ?: '-' }}
+                                <?php echo e($d->serial_number ?: '-'); ?>
+
                             </td>
 
                             <td class="px-4 py-3 text-gray-700">
-                                {{ $d->date_acquired ? $d->date_acquired->format('M d, Y') : '-' }}
+                                <?php echo e($d->date_acquired ? $d->date_acquired->format('M d, Y') : '-'); ?>
+
                             </td>
 
                             <td class="px-4 py-3 text-gray-700">
-                                @if($d->last_maintenance_date)
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($d->last_maintenance_date): ?>
                                     <div class="font-medium text-gray-900">
-                                        {{ $d->last_maintenance_date->format('M d, Y') }}
+                                        <?php echo e($d->last_maintenance_date->format('M d, Y')); ?>
+
                                     </div>
 
-                                    @if($d->maintenance_remarks)
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($d->maintenance_remarks): ?>
                                         <div class="max-w-xs truncate text-xs text-gray-500">
-                                            {{ $d->maintenance_remarks }}
+                                            <?php echo e($d->maintenance_remarks); ?>
+
                                         </div>
-                                    @endif
-                                @else
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                <?php else: ?>
                                     <span class="text-gray-400">
                                         Not yet checked
                                     </span>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
 
                             <td class="px-4 py-3 text-gray-700 capitalize">
-                                {{ $d->condition ?? 'serviceable' }}
+                                <?php echo e($d->condition ?? 'serviceable'); ?>
+
                             </td>
 
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     <a
-                                        href="{{ route('admin.devices.show', $d) }}"
+                                        href="<?php echo e(route('admin.devices.show', $d)); ?>"
                                         class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
                                     >
                                         View
                                     </a>
 
                                     <a
-                                        href="{{ route('admin.devices.history', $d) }}"
+                                        href="<?php echo e(route('admin.devices.history', $d)); ?>"
                                         class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
                                     >
                                         History
                                     </a>
 
-                                    <form method="POST" action="{{ route('admin.devices.markChecked', $d) }}">
-                                        @csrf
-                                        @method('PATCH')
+                                    <form method="POST" action="<?php echo e(route('admin.devices.markChecked', $d)); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('PATCH'); ?>
 
                                         <button
                                             type="submit"
@@ -452,30 +443,26 @@
                                         type="button"
                                         class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                         x-on:click="openEdit({
-                                            id: {{ $d->id }},
-                                            device_type_id: '{{ $d->device_type_id }}',
-                                            property_number: @js($d->property_number),
-                                            serial_number: @js($d->serial_number ?? ''),
-                                            brand: @js($d->brand ?? ''),
-                                            model: @js($d->model ?? ''),
-                                            mac_address: @js($d->mac_address ?? ''),
-                                            unit_price: @js($d->unit_price ?? ''),
-                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                            status: @js($d->status ?? 'available'),
-                                            condition: @js($d->condition ?? 'serviceable'),
-                                            notes: @js($d->notes ?? ''),
+                                            id: <?php echo e($d->id); ?>,
+                                            device_type_id: '<?php echo e($d->device_type_id); ?>',
+                                            property_number: <?php echo \Illuminate\Support\Js::from($d->property_number)->toHtml() ?>,
+                                            serial_number: <?php echo \Illuminate\Support\Js::from($d->serial_number ?? '')->toHtml() ?>,
+                                            brand: <?php echo \Illuminate\Support\Js::from($d->brand ?? '')->toHtml() ?>,
+                                            model: <?php echo \Illuminate\Support\Js::from($d->model ?? '')->toHtml() ?>,
+                                            mac_address: <?php echo \Illuminate\Support\Js::from($d->mac_address ?? '')->toHtml() ?>,
+                                            unit_price: <?php echo \Illuminate\Support\Js::from($d->unit_price ?? '')->toHtml() ?>,
+                                            date_acquired: <?php echo \Illuminate\Support\Js::from($d->date_acquired ? $d->date_acquired->format('Y-m-d') : '')->toHtml() ?>,
+                                            last_maintenance_date: <?php echo \Illuminate\Support\Js::from($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : '')->toHtml() ?>,
+                                            maintenance_remarks: <?php echo \Illuminate\Support\Js::from($d->maintenance_remarks ?? '')->toHtml() ?>,
+                                            status: <?php echo \Illuminate\Support\Js::from($d->status ?? 'available')->toHtml() ?>,
+                                            condition: <?php echo \Illuminate\Support\Js::from($d->condition ?? 'serviceable')->toHtml() ?>,
+                                            notes: <?php echo \Illuminate\Support\Js::from($d->notes ?? '')->toHtml() ?>,
                                             specs: {
-                        os: @js(data_get($d->specs, 'os', '')),
-                        os_version: @js(data_get($d->specs, 'os_version', '')),
-                        os_license: @js(data_get($d->specs, 'os_license', '')),
-                        memory: @js(data_get($d->specs, 'memory', '')),
-                        storage: @js(data_get($d->specs, 'storage', '')),
-                        form_factor: @js(data_get($d->specs, 'form_factor', '')),
-                        office_version: @js(data_get($d->specs, 'office_version', '')),
-                        office_license: @js(data_get($d->specs, 'office_license', ''))
-                    }
+                                                os: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'os', ''))->toHtml() ?>,
+                                                memory: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'memory', ''))->toHtml() ?>,
+                                                storage: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'storage', ''))->toHtml() ?>,
+                                                form_factor: <?php echo \Illuminate\Support\Js::from(data_get($d->specs, 'form_factor', ''))->toHtml() ?>
+                                            }
                                         })"
                                     >
                                         Edit
@@ -484,33 +471,45 @@
                                     <button
                                         type="button"
                                         class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                        x-on:click="openDelete({{ $d->id }})"
+                                        x-on:click="openDelete(<?php echo e($d->id); ?>)"
                                     >
                                         Delete
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                    @empty
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                                 No devices found.
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div>
-        {{ $devices->links() }}
+        <?php echo e($devices->links()); ?>
+
     </div>
 
-    {{-- ADD MODAL --}}
-    <x-modal show="addOpen" title="Add Device">
-        <form method="POST" action="{{ route('admin.devices.store') }}" class="space-y-4">
-            @csrf
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'addOpen','title' => 'Add Device']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'addOpen','title' => 'Add Device']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+        <form method="POST" action="<?php echo e(route('admin.devices.store')); ?>" class="space-y-4">
+            <?php echo csrf_field(); ?>
 
             <input type="hidden" name="status" value="available">
 
@@ -523,11 +522,12 @@
                         required
                         x-model="addTypeId"
                     >
-                        @foreach($types as $t)
-                            <option value="{{ $t->id }}">
-                                {{ $t->name }}
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $types; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                            <option value="<?php echo e($t->id); ?>">
+                                <?php echo e($t->name); ?>
+
                             </option>
-                        @endforeach
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     </select>
                 </div>
 
@@ -535,7 +535,7 @@
                     <label class="text-sm font-medium">Property Number</label>
                     <input
                         name="property_number"
-                        value="{{ old('property_number') }}"
+                        value="<?php echo e(old('property_number')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         required
                     >
@@ -545,7 +545,7 @@
                     <label class="text-sm font-medium">Serial Number</label>
                     <input
                         name="serial_number"
-                        value="{{ old('serial_number') }}"
+                        value="<?php echo e(old('serial_number')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         placeholder="Enter serial number"
                     >
@@ -555,7 +555,7 @@
                     <label class="text-sm font-medium">Brand</label>
                     <input
                         name="brand"
-                        value="{{ old('brand') }}"
+                        value="<?php echo e(old('brand')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                     >
                 </div>
@@ -564,7 +564,7 @@
                     <label class="text-sm font-medium">Model</label>
                     <input
                         name="model"
-                        value="{{ old('model') }}"
+                        value="<?php echo e(old('model')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         placeholder="Example: Epson L3110, Acer Aspire"
                     >
@@ -574,7 +574,7 @@
                     <label class="text-sm font-medium">MAC Address</label>
                     <input
                         name="mac_address"
-                        value="{{ old('mac_address') }}"
+                        value="<?php echo e(old('mac_address')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         placeholder="00:1A:2B:3C:4D:5E"
                         :disabled="!isComputerType(addTypeId)"
@@ -583,73 +583,20 @@
 
                 <div x-show="isComputerType(addTypeId)" x-cloak>
                     <label class="text-sm font-medium">Operating System</label>
-                    <select
-                        name="specs[os_version]"
+                    <input
+                        name="specs[os]"
+                        value="<?php echo e(old('specs.os')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="addOs"
+                        placeholder="Example: Windows 10, Windows 11, Ubuntu"
                         :disabled="!isComputerType(addTypeId)"
                     >
-                        <option value="">-- Select OS --</option>
-                        <option value="Windows 7">Windows 7</option>
-                        <option value="Windows 8">Windows 8</option>
-                        <option value="Windows 10">Windows 10</option>
-                        <option value="Windows 11">Windows 11</option>
-                    </select>
-                </div>
-
-                <div x-show="isComputerType(addTypeId) && addOs !== ''" x-cloak>
-                    <label class="text-sm font-medium">OS License Type</label>
-                    <select
-                        name="specs[os_license]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="addOsLicense"
-                        :disabled="!isComputerType(addTypeId) || addOs === ''"
-                    >
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                        <option value="Retail Licensed">Retail Licensed</option>
-                    </select>
-                </div>
-
-                <div x-show="isComputerType(addTypeId)" x-cloak>
-                    <label class="text-sm font-medium">Microsoft Office Version</label>
-                    <select
-                        name="specs[office_version]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="addOffice"
-                        :disabled="!isComputerType(addTypeId)"
-                    >
-                        <option value="">-- Select Office Version --</option>
-                        <option value="Office 2007">Office 2007</option>
-                        <option value="Office 2010">Office 2010</option>
-                        <option value="Office 2013">Office 2013</option>
-                        <option value="Office 2016">Office 2016</option>
-                        <option value="Office 2019">Office 2019</option>
-                        <option value="Office 2021">Office 2021</option>
-                        <option value="Office 365">Office 365</option>
-                    </select>
-                </div>
-
-                <div x-show="isComputerType(addTypeId) && addOffice !== ''" x-cloak>
-                    <label class="text-sm font-medium">Office License Type</label>
-                    <select
-                        name="specs[office_license]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="addOfficeLicense"
-                        :disabled="!isComputerType(addTypeId) || addOffice === ''"
-                    >
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                    </select>
                 </div>
 
                 <div x-show="isComputerType(addTypeId)" x-cloak>
                     <label class="text-sm font-medium">Memory</label>
                     <input
                         name="specs[memory]"
-                        value="{{ old('specs.memory') }}"
+                        value="<?php echo e(old('specs.memory')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         placeholder="Example: 8GB RAM"
                         :disabled="!isComputerType(addTypeId)"
@@ -660,7 +607,7 @@
                     <label class="text-sm font-medium">Storage</label>
                     <input
                         name="specs[storage]"
-                        value="{{ old('specs.storage') }}"
+                        value="<?php echo e(old('specs.storage')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         placeholder="Example: 256GB SSD / 1TB HDD"
                         :disabled="!isComputerType(addTypeId)"
@@ -671,7 +618,7 @@
                     <label class="text-sm font-medium">Form Factor</label>
                     <input
                         name="specs[form_factor]"
-                        value="{{ old('specs.form_factor') }}"
+                        value="<?php echo e(old('specs.form_factor')); ?>"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                         placeholder="Example: Tower, SFF, Mini PC, All-in-One"
                         :disabled="!isComputerType(addTypeId)"
@@ -682,7 +629,7 @@
                     <label class="text-sm font-medium">Unit Price</label>
                     <input
                         name="unit_price"
-                        value="{{ old('unit_price') }}"
+                        value="<?php echo e(old('unit_price')); ?>"
                         type="number"
                         step="0.01"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -693,7 +640,7 @@
                     <label class="text-sm font-medium">Date Acquired</label>
                     <input
                         name="date_acquired"
-                        value="{{ old('date_acquired') }}"
+                        value="<?php echo e(old('date_acquired')); ?>"
                         type="date"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                     >
@@ -705,10 +652,10 @@
                         name="condition"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                     >
-                        <option value="serviceable" @selected(old('condition', 'serviceable') === 'serviceable')>
+                        <option value="serviceable" <?php if(old('condition', 'serviceable') === 'serviceable'): echo 'selected'; endif; ?>>
                             Serviceable
                         </option>
-                        <option value="unserviceable" @selected(old('condition') === 'unserviceable')>
+                        <option value="unserviceable" <?php if(old('condition') === 'unserviceable'): echo 'selected'; endif; ?>>
                             Unserviceable
                         </option>
                     </select>
@@ -718,7 +665,7 @@
                     <label class="text-sm font-medium">Last Maintenance Date</label>
                     <input
                         name="last_maintenance_date"
-                        value="{{ old('last_maintenance_date') }}"
+                        value="<?php echo e(old('last_maintenance_date')); ?>"
                         type="date"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                     >
@@ -732,7 +679,7 @@
                     rows="3"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                     placeholder="Example: Initial check, cleaned, inspected"
-                >{{ old('maintenance_remarks') }}</textarea>
+                ><?php echo e(old('maintenance_remarks')); ?></textarea>
             </div>
 
             <div>
@@ -741,7 +688,7 @@
                     name="notes"
                     rows="3"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                >{{ old('notes') }}</textarea>
+                ><?php echo e(old('notes')); ?></textarea>
             </div>
 
             <div class="flex gap-2 pt-2">
@@ -761,13 +708,33 @@
                 </button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- EDIT MODAL --}}
-    <x-modal show="editOpen" title="Edit Device">
-        <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4">
-            @csrf
-            @method('PUT')
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'editOpen','title' => 'Edit Device']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'editOpen','title' => 'Edit Device']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+        <form method="POST" :action="`<?php echo e(url('/admin/devices')); ?>/${editDevice.id}`" class="space-y-4">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
 
             <input type="hidden" name="status" x-model="editDevice.status">
 
@@ -780,11 +747,12 @@
                         required
                         x-model="editDevice.device_type_id"
                     >
-                        @foreach($types as $t)
-                            <option value="{{ $t->id }}">
-                                {{ $t->name }}
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $types; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                            <option value="<?php echo e($t->id); ?>">
+                                <?php echo e($t->name); ?>
+
                             </option>
-                        @endforeach
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     </select>
                 </div>
 
@@ -839,66 +807,13 @@
 
                 <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
                     <label class="text-sm font-medium">Operating System</label>
-                    <select
-                        name="specs[os_version]"
+                    <input
+                        name="specs[os]"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.specs.os_version"
+                        x-model="editDevice.specs.os"
+                        placeholder="Example: Windows 10, Windows 11, Ubuntu"
                         :disabled="!isComputerType(editDevice.device_type_id)"
                     >
-                        <option value="">-- Select OS --</option>
-                        <option value="Windows 7">Windows 7</option>
-                        <option value="Windows 8">Windows 8</option>
-                        <option value="Windows 10">Windows 10</option>
-                        <option value="Windows 11">Windows 11</option>
-                    </select>
-                </div>
-
-                <div x-show="isComputerType(editDevice.device_type_id) && editDevice.specs.os_version !== ''" x-cloak>
-                    <label class="text-sm font-medium">OS License Type</label>
-                    <select
-                        name="specs[os_license]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.specs.os_license"
-                        :disabled="!isComputerType(editDevice.device_type_id) || editDevice.specs.os_version === ''"
-                    >
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                        <option value="Retail Licensed">Retail Licensed</option>
-                    </select>
-                </div>
-
-                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                    <label class="text-sm font-medium">Microsoft Office Version</label>
-                    <select
-                        name="specs[office_version]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.specs.office_version"
-                        :disabled="!isComputerType(editDevice.device_type_id)"
-                    >
-                        <option value="">-- Select Office Version --</option>
-                        <option value="Office 2007">Office 2007</option>
-                        <option value="Office 2010">Office 2010</option>
-                        <option value="Office 2013">Office 2013</option>
-                        <option value="Office 2016">Office 2016</option>
-                        <option value="Office 2019">Office 2019</option>
-                        <option value="Office 2021">Office 2021</option>
-                        <option value="Office 365">Office 365</option>
-                    </select>
-                </div>
-
-                <div x-show="isComputerType(editDevice.device_type_id) && editDevice.specs.office_version !== ''" x-cloak>
-                    <label class="text-sm font-medium">Office License Type</label>
-                    <select
-                        name="specs[office_license]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.specs.office_license"
-                        :disabled="!isComputerType(editDevice.device_type_id) || editDevice.specs.office_version === ''"
-                    >
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                    </select>
                 </div>
 
                 <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
@@ -1015,10 +930,30 @@
                 </button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- DELETE MODAL --}}
-    <x-modal show="deleteOpen" title="Delete Device">
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'deleteOpen','title' => 'Delete Device']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'deleteOpen','title' => 'Delete Device']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
         <div class="space-y-3">
             <div class="text-sm text-gray-700">
                 Are you sure you want to delete this device?
@@ -1026,12 +961,12 @@
 
             <form
                 method="POST"
-                :action="`{{ url('/admin/devices') }}/${deleteDeviceId}`"
+                :action="`<?php echo e(url('/admin/devices')); ?>/${deleteDeviceId}`"
                 @submit="if (!deleteDeviceId) $event.preventDefault()"
                 class="flex gap-2"
             >
-                @csrf
-                @method('DELETE')
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
 
                 <button
                     type="submit"
@@ -1050,6 +985,16 @@
                 </button>
             </form>
         </div>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\xampp\htdocs\PMS_system\resources\views/admin/devices/index.blade.php ENDPATH**/ ?>

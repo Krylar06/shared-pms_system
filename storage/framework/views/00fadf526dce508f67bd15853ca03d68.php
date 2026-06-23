@@ -1,10 +1,8 @@
-@extends('admin.layouts.app')
+<?php $__env->startSection('title', 'Staff'); ?>
+<?php $__env->startSection('page_title', 'Staff'); ?>
 
-@section('title', 'Staff')
-@section('page_title', 'Staff')
-
-@section('content')
-@php
+<?php $__env->startSection('content'); ?>
+<?php
     $addBag = $errors->getBag('add');
     $editBag = $errors->getBag('edit');
 
@@ -25,40 +23,40 @@
             'emailError' => $addBag->first("staff.$i.email"),
         ];
     }
-@endphp
+?>
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('staffManager', () => ({
-        addOpen: {{ $addBag->any() ? 'true' : 'false' }},
-        editOpen: {{ $editBag->any() ? 'true' : 'false' }},
+        addOpen: <?php echo e($addBag->any() ? 'true' : 'false'); ?>,
+        editOpen: <?php echo e($editBag->any() ? 'true' : 'false'); ?>,
         deleteOpen: false,
-        bulkEnabled: {{ old('staff') !== null ? 'true' : 'false' }},
+        bulkEnabled: <?php echo e(old('staff') !== null ? 'true' : 'false'); ?>,
 
         addSingle: {
-            first_name: @js(old('first_name', '')),
-            last_name: @js(old('last_name', '')),
-            position: @js(old('position', '')),
-            email: @js(old('email', '')),
-            phone: @js(old('phone', '')),
-            is_active: {{ old('first_name') !== null ? (old('is_active') ? 'true' : 'false') : 'true' }},
-            firstNameError: @js($addBag->first('first_name')),
-            lastNameError: @js($addBag->first('last_name')),
-            emailError: @js($addBag->first('email'))
+            first_name: <?php echo \Illuminate\Support\Js::from(old('first_name', ''))->toHtml() ?>,
+            last_name: <?php echo \Illuminate\Support\Js::from(old('last_name', ''))->toHtml() ?>,
+            position: <?php echo \Illuminate\Support\Js::from(old('position', ''))->toHtml() ?>,
+            email: <?php echo \Illuminate\Support\Js::from(old('email', ''))->toHtml() ?>,
+            phone: <?php echo \Illuminate\Support\Js::from(old('phone', ''))->toHtml() ?>,
+            is_active: <?php echo e(old('first_name') !== null ? (old('is_active') ? 'true' : 'false') : 'true'); ?>,
+            firstNameError: <?php echo \Illuminate\Support\Js::from($addBag->first('first_name'))->toHtml() ?>,
+            lastNameError: <?php echo \Illuminate\Support\Js::from($addBag->first('last_name'))->toHtml() ?>,
+            emailError: <?php echo \Illuminate\Support\Js::from($addBag->first('email'))->toHtml() ?>
         },
 
-        bulkRows: @json($bulkRowsSeed),
+        bulkRows: <?php echo json_encode($bulkRowsSeed, 15, 512) ?>,
 
         editStaff: {
-            id: @js(old('editing_id') !== null ? (int) old('editing_id') : null),
-            first_name: @js(old('first_name', '')),
-            last_name: @js(old('last_name', '')),
-            position: @js(old('position', '')),
-            email: @js(old('email', '')),
-            phone: @js(old('phone', '')),
-            is_active: {{ old('editing_id') !== null ? (old('is_active') ? 'true' : 'false') : 'true' }},
-            firstNameError: @js($editBag->first('first_name')),
-            lastNameError: @js($editBag->first('last_name')),
-            emailError: @js($editBag->first('email'))
+            id: <?php echo \Illuminate\Support\Js::from(old('editing_id') !== null ? (int) old('editing_id') : null)->toHtml() ?>,
+            first_name: <?php echo \Illuminate\Support\Js::from(old('first_name', ''))->toHtml() ?>,
+            last_name: <?php echo \Illuminate\Support\Js::from(old('last_name', ''))->toHtml() ?>,
+            position: <?php echo \Illuminate\Support\Js::from(old('position', ''))->toHtml() ?>,
+            email: <?php echo \Illuminate\Support\Js::from(old('email', ''))->toHtml() ?>,
+            phone: <?php echo \Illuminate\Support\Js::from(old('phone', ''))->toHtml() ?>,
+            is_active: <?php echo e(old('editing_id') !== null ? (old('is_active') ? 'true' : 'false') : 'true'); ?>,
+            firstNameError: <?php echo \Illuminate\Support\Js::from($editBag->first('first_name'))->toHtml() ?>,
+            lastNameError: <?php echo \Illuminate\Support\Js::from($editBag->first('last_name'))->toHtml() ?>,
+            emailError: <?php echo \Illuminate\Support\Js::from($editBag->first('email'))->toHtml() ?>
         },
 
         deleteStaffId: null,
@@ -117,28 +115,29 @@ document.addEventListener('alpine:init', () => {
     x-data="staffManager"
     class="space-y-5"
 >
-    {{-- Breadcrumb --}}
+    
     <div class="text-sm text-gray-500 leading-6 break-words">
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.colleges.index') }}">Colleges</a>
+        <a class="text-blue-600 hover:underline" href="<?php echo e(route('admin.colleges.index')); ?>">Colleges</a>
         <span class="mx-1">/</span>
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.offices.index', $office->college) }}">
-            {{ $office->college->name }}
+        <a class="text-blue-600 hover:underline" href="<?php echo e(route('admin.offices.index', $office->college)); ?>">
+            <?php echo e($office->college->name); ?>
+
         </a>
         <span class="mx-1">/</span>
-        <span class="text-gray-700 font-medium">{{ $office->name }}</span>
+        <span class="text-gray-700 font-medium"><?php echo e($office->name); ?></span>
         <span class="mx-1">/</span>
         <span>Staff</span>
     </div>
 
-    {{-- Top section --}}
+    
     <div class="flex items-start justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Staff in {{ $office->name }}</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Staff in <?php echo e($office->name); ?></h1>
         </div>
 
         <div class="flex flex-wrap gap-2">
             <a
-                href="{{ route('admin.offices.preventiveMaintenance.export', $office) }}"
+                href="<?php echo e(route('admin.offices.preventiveMaintenance.export', $office)); ?>"
                 class="shrink-0 inline-flex items-center rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700"
             >
                 Export Excel Report
@@ -154,58 +153,61 @@ document.addEventListener('alpine:init', () => {
         </div>
     </div>
 
-    @if(session('error'))
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
         <div class="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
-            {{ session('error') }}
-        </div>
-    @endif
+            <?php echo e(session('error')); ?>
 
-    {{-- Mobile cards --}}
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    
     <div class="grid grid-cols-1 gap-3 md:hidden">
-        @forelse($staff as $s)
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $staff; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
             <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <a
                             class="font-semibold text-blue-700 hover:underline"
-                            href="{{ route('admin.staff.devices.index', $s) }}"
+                            href="<?php echo e(route('admin.staff.devices.index', $s)); ?>"
                         >
-                            {{ $s->last_name }}, {{ $s->first_name }}
+                            <?php echo e($s->last_name); ?>, <?php echo e($s->first_name); ?>
+
                         </a>
 
                         <div class="mt-1 text-sm text-gray-500">
-                            {{ $s->position ?: 'No position set' }}
+                            <?php echo e($s->position ?: 'No position set'); ?>
+
                         </div>
                     </div>
 
                     <div>
-                        @if($s->is_active)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($s->is_active): ?>
                             <span class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
                                 Active
                             </span>
-                        @else
+                        <?php else: ?>
                             <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
                                 Inactive
                             </span>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                 </div>
 
                 <div class="mt-4 grid grid-cols-1 gap-3 text-sm">
                     <div>
                         <div class="text-gray-500">Email</div>
-                        <div class="break-all text-gray-900">{{ $s->email ?: '-' }}</div>
+                        <div class="break-all text-gray-900"><?php echo e($s->email ?: '-'); ?></div>
                     </div>
 
                     <div>
                         <div class="text-gray-500">Phone</div>
-                        <div class="text-gray-900">{{ $s->phone ?: '-' }}</div>
+                        <div class="text-gray-900"><?php echo e($s->phone ?: '-'); ?></div>
                     </div>
                 </div>
 
                 <div class="mt-4 flex flex-wrap gap-2">
                     <a
-                        href="{{ route('admin.staff.devices.index', $s) }}"
+                        href="<?php echo e(route('admin.staff.devices.index', $s)); ?>"
                         class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
                     >
                         Devices
@@ -215,13 +217,14 @@ document.addEventListener('alpine:init', () => {
                         type="button"
                         class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                         @click="openEdit({
-                            id: {{ $s->id }},
-                            first_name: @js($s->first_name),
-                            last_name: @js($s->last_name),
-                            position: @js($s->position ?? ''),
-                            email: @js($s->email ?? ''),
-                            phone: @js($s->phone ?? ''),
-                            is_active: {{ $s->is_active ? 'true' : 'false' }}
+                            id: <?php echo e($s->id); ?>,
+                            first_name: <?php echo \Illuminate\Support\Js::from($s->first_name)->toHtml() ?>,
+                            last_name: <?php echo \Illuminate\Support\Js::from($s->last_name)->toHtml() ?>,
+                            position: <?php echo \Illuminate\Support\Js::from($s->position ?? '')->toHtml() ?>,
+                            email: <?php echo \Illuminate\Support\Js::from($s->email ?? '')->toHtml() ?>,
+                            phone: <?php echo \Illuminate\Support\Js::from($s->phone ?? '')->toHtml() ?>,
+                            is_active: <?php echo e($s->is_active ? 'true' : 'false'); ?>
+
                         })"
                     >
                         Edit
@@ -230,20 +233,20 @@ document.addEventListener('alpine:init', () => {
                     <button
                         type="button"
                         class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                        @click="openDelete({{ $s->id }})"
+                        @click="openDelete(<?php echo e($s->id); ?>)"
                     >
                         Delete
                     </button>
                 </div>
             </div>
-        @empty
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm">
                 No staff found.
             </div>
-        @endforelse
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
-    {{-- Desktop table --}}
+    
     <div class="hidden md:block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
@@ -259,37 +262,38 @@ document.addEventListener('alpine:init', () => {
                 </thead>
 
                 <tbody class="divide-y divide-gray-200">
-                    @forelse($staff as $s)
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $staff; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3">
                                 <a
                                     class="font-medium text-blue-700 hover:underline"
-                                    href="{{ route('admin.staff.devices.index', $s) }}"
+                                    href="<?php echo e(route('admin.staff.devices.index', $s)); ?>"
                                 >
-                                    {{ $s->last_name }}, {{ $s->first_name }}
+                                    <?php echo e($s->last_name); ?>, <?php echo e($s->first_name); ?>
+
                                 </a>
                             </td>
 
-                            <td class="px-4 py-3 text-gray-700">{{ $s->position ?: '-' }}</td>
-                            <td class="px-4 py-3 text-gray-700">{{ $s->email ?: '-' }}</td>
-                            <td class="px-4 py-3 text-gray-700">{{ $s->phone ?: '-' }}</td>
+                            <td class="px-4 py-3 text-gray-700"><?php echo e($s->position ?: '-'); ?></td>
+                            <td class="px-4 py-3 text-gray-700"><?php echo e($s->email ?: '-'); ?></td>
+                            <td class="px-4 py-3 text-gray-700"><?php echo e($s->phone ?: '-'); ?></td>
 
                             <td class="px-4 py-3">
-                                @if($s->is_active)
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($s->is_active): ?>
                                     <span class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
                                         Active
                                     </span>
-                                @else
+                                <?php else: ?>
                                     <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
                                         Inactive
                                     </span>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
 
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     <a
-                                        href="{{ route('admin.staff.devices.index', $s) }}"
+                                        href="<?php echo e(route('admin.staff.devices.index', $s)); ?>"
                                         class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
                                     >
                                         Devices
@@ -299,13 +303,14 @@ document.addEventListener('alpine:init', () => {
                                         type="button"
                                         class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                         @click="openEdit({
-                                            id: {{ $s->id }},
-                                            first_name: @js($s->first_name),
-                                            last_name: @js($s->last_name),
-                                            position: @js($s->position ?? ''),
-                                            email: @js($s->email ?? ''),
-                                            phone: @js($s->phone ?? ''),
-                                            is_active: {{ $s->is_active ? 'true' : 'false' }}
+                                            id: <?php echo e($s->id); ?>,
+                                            first_name: <?php echo \Illuminate\Support\Js::from($s->first_name)->toHtml() ?>,
+                                            last_name: <?php echo \Illuminate\Support\Js::from($s->last_name)->toHtml() ?>,
+                                            position: <?php echo \Illuminate\Support\Js::from($s->position ?? '')->toHtml() ?>,
+                                            email: <?php echo \Illuminate\Support\Js::from($s->email ?? '')->toHtml() ?>,
+                                            phone: <?php echo \Illuminate\Support\Js::from($s->phone ?? '')->toHtml() ?>,
+                                            is_active: <?php echo e($s->is_active ? 'true' : 'false'); ?>
+
                                         })"
                                     >
                                         Edit
@@ -314,33 +319,45 @@ document.addEventListener('alpine:init', () => {
                                     <button
                                         type="button"
                                         class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                        @click="openDelete({{ $s->id }})"
+                                        @click="openDelete(<?php echo e($s->id); ?>)"
                                     >
                                         Delete
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                    @empty
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                                 No staff found.
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div>
-        {{ $staff->links() }}
+        <?php echo e($staff->links()); ?>
+
     </div>
 
-    {{-- Add modal --}}
-    <x-modal show="addOpen" title="Add Staff">
-        <form method="POST" action="{{ route('admin.staff.store', $office) }}" class="space-y-3">
-            @csrf
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'addOpen','title' => 'Add Staff']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'addOpen','title' => 'Add Staff']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+        <form method="POST" action="<?php echo e(route('admin.staff.store', $office)); ?>" class="space-y-3">
+            <?php echo csrf_field(); ?>
 
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium text-gray-700">Add multiple staff</span>
@@ -494,17 +511,37 @@ document.addEventListener('alpine:init', () => {
                 <button type="button" class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200" @click="addOpen=false">Cancel</button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- Edit modal --}}
-    <x-modal show="editOpen" title="Edit Staff">
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'editOpen','title' => 'Edit Staff']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'editOpen','title' => 'Edit Staff']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
         <form
             method="POST"
-            :action="`{{ url('/offices/'.$office->id.'/staff') }}/${editStaff.id}`"
+            :action="`<?php echo e(url('/offices/'.$office->id.'/staff')); ?>/${editStaff.id}`"
             class="space-y-3"
         >
-            @csrf
-            @method('PUT')
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
 
             <input type="hidden" name="editing_id" :value="editStaff.id">
 
@@ -546,10 +583,30 @@ document.addEventListener('alpine:init', () => {
                 <button type="button" class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200" @click="editOpen=false">Cancel</button>
             </div>
         </form>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
-    {{-- Delete modal --}}
-    <x-modal show="deleteOpen" title="Delete Staff">
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['show' => 'deleteOpen','title' => 'Delete Staff']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['show' => 'deleteOpen','title' => 'Delete Staff']); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
         <div class="space-y-3">
             <div class="text-sm text-gray-700">
                 Are you sure you want to delete this staff member?
@@ -557,17 +614,27 @@ document.addEventListener('alpine:init', () => {
 
             <form
                 method="POST"
-                :action="`{{ url('/offices/'.$office->id.'/staff') }}/${deleteStaffId}`"
+                :action="`<?php echo e(url('/offices/'.$office->id.'/staff')); ?>/${deleteStaffId}`"
                 @submit="if (!deleteStaffId) $event.preventDefault()"
                 class="flex gap-2"
             >
-                @csrf
-                @method('DELETE')
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
 
                 <button type="submit" x-ref="confirmDeleteBtn" class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">Confirm</button>
                 <button type="button" class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200" @click="deleteOpen=false">Cancel</button>
             </form>
         </div>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\xampp\htdocs\PMS_system\resources\views/admin/staff/index.blade.php ENDPATH**/ ?>
