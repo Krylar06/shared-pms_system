@@ -6,68 +6,68 @@
 @section('content')
 
     <div x-data="{
-                            addOpen: false,
-                            editOpen: false,
-                            deleteOpen: false,
+                                addOpen: false,
+                                editOpen: false,
+                                deleteOpen: false,
 
-                            addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
+                                addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
 
-                            typeNames: @js($types->pluck('name', 'id')),
+                                typeNames: @js($types->pluck('name', 'id')),
 
-                            editDevice: {
-                                id: null,
-                                device_type_id: '',
-                                property_number: '',
-                                serial_number: '',
-                                brand: '',
-                                model: '',
-                                mac_address: '',
-                                unit_price: '',
-                                date_acquired: '',
-                                last_maintenance_date: '',
-                                maintenance_remarks: '',
-                                notes: '',
-                                status: 'available',
-                                condition: 'serviceable',
-                                specs: {
-                                    os: '',
-                                    memory: '',
-                                    storage: '',
-                                    form_factor: ''
+                                editDevice: {
+                                    id: null,
+                                    device_type_id: '',
+                                    property_number: '',
+                                    serial_number: '',
+                                    brand: '',
+                                    model: '',
+                                    mac_address: '',
+                                    unit_price: '',
+                                    date_acquired: '',
+                                    last_maintenance_date: '',
+                                    maintenance_remarks: '',
+                                    notes: '',
+                                    status: 'available',
+                                    condition: 'serviceable',
+                                    specs: {
+                                        os: '',
+                                        memory: '',
+                                        storage: '',
+                                        form_factor: ''
+                                    }
+                                },
+
+                                deleteDeviceId: null,
+
+                                getTypeName(typeId) {
+                                    return (this.typeNames[typeId] || '').toLowerCase();
+                                },
+
+                                isComputerType(typeId) {
+                                    let name = this.getTypeName(typeId);
+                                    return name === 'desktop' || name === 'laptop';
+                                },
+
+                                openEdit(device) {
+                                    device.specs = device.specs ?? {};
+                                    device.specs.os = device.specs.os ?? '';
+                                    device.specs.memory = device.specs.memory ?? '';
+                                    device.specs.storage = device.specs.storage ?? '';
+                                    device.specs.form_factor = device.specs.form_factor ?? '';
+                                    device.serial_number = device.serial_number ?? '';
+                                    device.status = device.status ?? 'available';
+                                    device.condition = device.condition ?? 'serviceable';
+
+                                    this.editDevice = device;
+                                    this.editOpen = true;
+                                },
+
+                                openDelete(id) {
+                                    this.deleteDeviceId = id;
+                                    this.deleteOpen = true;
+                                    this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
                                 }
-                            },
-
-                            deleteDeviceId: null,
-
-                            getTypeName(typeId) {
-                                return (this.typeNames[typeId] || '').toLowerCase();
-                            },
-
-                            isComputerType(typeId) {
-                                let name = this.getTypeName(typeId);
-                                return name === 'desktop' || name === 'laptop';
-                            },
-
-                            openEdit(device) {
-                                device.specs = device.specs ?? {};
-                                device.specs.os = device.specs.os ?? '';
-                                device.specs.memory = device.specs.memory ?? '';
-                                device.specs.storage = device.specs.storage ?? '';
-                                device.specs.form_factor = device.specs.form_factor ?? '';
-                                device.serial_number = device.serial_number ?? '';
-                                device.status = device.status ?? 'available';
-                                device.condition = device.condition ?? 'serviceable';
-
-                                this.editDevice = device;
-                                this.editOpen = true;
-                            },
-
-                            openDelete(id) {
-                                this.deleteDeviceId = id;
-                                this.deleteOpen = true;
-                                this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
-                            }
-                        }" class="space-y-5">
+                            }" class="space-y-5">
         <div class="flex items-start justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">
@@ -109,7 +109,6 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <form method="GET" class="flex flex-col gap-3 lg:flex-row lg:items-center">
 
-                {{-- Device Type --}}
                 <div class="w-full lg:w-44">
                     <select name="type" onchange="this.form.submit()"
                         class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
@@ -125,7 +124,6 @@
                     </select>
                 </div>
 
-                {{-- College --}}
                 <div class="w-full lg:w-44">
                     <select name="college" onchange="this.form.submit()"
                         class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
@@ -141,7 +139,6 @@
                     </select>
                 </div>
 
-                {{-- Condition --}}
                 <div class="w-full lg:w-44">
                     <select name="condition" onchange="this.form.submit()"
                         class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
@@ -159,11 +156,9 @@
                     </select>
                 </div>
 
-                {{-- Search --}}
                 <input name="q" value="{{ $q }}" placeholder="Search property #, serial #..."
                     class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
 
-                {{-- Reset --}}
                 <div>
                     <a href="{{ route('admin.devices.index') }}"
                         class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">
@@ -292,27 +287,27 @@
                             <button type="button"
                                 class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                 x-on:click="openEdit({
-                                                                        id: {{ $d->id }},
-                                                                        device_type_id: '{{ $d->device_type_id }}',
-                                                                        property_number: @js($d->property_number),
-                                                                        serial_number: @js($d->serial_number ?? ''),
-                                                                        brand: @js($d->brand ?? ''),
-                                                                        model: @js($d->model ?? ''),
-                                                                        mac_address: @js($d->mac_address ?? ''),
-                                                                        unit_price: @js($d->unit_price ?? ''),
-                                                                        date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                        last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                        maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                        status: @js($d->status ?? 'available'),
-                                                                        condition: @js($d->condition ?? 'serviceable'),
-                                                                        notes: @js($d->notes ?? ''),
-                                                                        specs: {
-                                                                            os: @js(data_get($d->specs, 'os', '')),
-                                                                            memory: @js(data_get($d->specs, 'memory', '')),
-                                                                            storage: @js(data_get($d->specs, 'storage', '')),
-                                                                            form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                        }
-                                                                    })">
+                                                                                id: {{ $d->id }},
+                                                                                device_type_id: '{{ $d->device_type_id }}',
+                                                                                property_number: @js($d->property_number),
+                                                                                serial_number: @js($d->serial_number ?? ''),
+                                                                                brand: @js($d->brand ?? ''),
+                                                                                model: @js($d->model ?? ''),
+                                                                                mac_address: @js($d->mac_address ?? ''),
+                                                                                unit_price: @js($d->unit_price ?? ''),
+                                                                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                                                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                                                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                                                                status: @js($d->status ?? 'available'),
+                                                                                condition: @js($d->condition ?? 'serviceable'),
+                                                                                notes: @js($d->notes ?? ''),
+                                                                                specs: {
+                                                                                    os: @js(data_get($d->specs, 'os', '')),
+                                                                                    memory: @js(data_get($d->specs, 'memory', '')),
+                                                                                    storage: @js(data_get($d->specs, 'storage', '')),
+                                                                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                                                                }
+                                                                            })">
                                 Edit
                             </button>
 
@@ -415,27 +410,27 @@
                                         <button type="button"
                                             class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                             x-on:click="openEdit({
-                                                                                    id: {{ $d->id }},
-                                                                                    device_type_id: '{{ $d->device_type_id }}',
-                                                                                    property_number: @js($d->property_number),
-                                                                                    serial_number: @js($d->serial_number ?? ''),
-                                                                                    brand: @js($d->brand ?? ''),
-                                                                                    model: @js($d->model ?? ''),
-                                                                                    mac_address: @js($d->mac_address ?? ''),
-                                                                                    unit_price: @js($d->unit_price ?? ''),
-                                                                                    date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                    last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                    maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                    status: @js($d->status ?? 'available'),
-                                                                                    condition: @js($d->condition ?? 'serviceable'),
-                                                                                    notes: @js($d->notes ?? ''),
-                                                                                    specs: {
-                                                                                        os: @js(data_get($d->specs, 'os', '')),
-                                                                                        memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                        storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                        form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                    }
-                                                                                })">
+                                                                                            id: {{ $d->id }},
+                                                                                            device_type_id: '{{ $d->device_type_id }}',
+                                                                                            property_number: @js($d->property_number),
+                                                                                            serial_number: @js($d->serial_number ?? ''),
+                                                                                            brand: @js($d->brand ?? ''),
+                                                                                            model: @js($d->model ?? ''),
+                                                                                            mac_address: @js($d->mac_address ?? ''),
+                                                                                            unit_price: @js($d->unit_price ?? ''),
+                                                                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                                                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                                                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                                                                            status: @js($d->status ?? 'available'),
+                                                                                            condition: @js($d->condition ?? 'serviceable'),
+                                                                                            notes: @js($d->notes ?? ''),
+                                                                                            specs: {
+                                                                                                os: @js(data_get($d->specs, 'os', '')),
+                                                                                                memory: @js(data_get($d->specs, 'memory', '')),
+                                                                                                storage: @js(data_get($d->specs, 'storage', '')),
+                                                                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                                                                            }
+                                                                                        })">
                                             Edit
                                         </button>
 
