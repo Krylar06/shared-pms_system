@@ -9,7 +9,6 @@ use App\Models\DeviceMaintenanceRecord;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class DeviceChecklistController extends Controller
 {
