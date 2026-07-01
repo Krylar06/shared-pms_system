@@ -6,68 +6,68 @@
 @section('content')
 
     <div x-data="{
-                                addOpen: false,
-                                editOpen: false,
-                                deleteOpen: false,
+                                        addOpen: false,
+                                        editOpen: false,
+                                        deleteOpen: false,
 
-                                addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
+                                        addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
 
-                                typeNames: @js($types->pluck('name', 'id')),
+                                        typeNames: @js($types->pluck('name', 'id')),
 
-                                editDevice: {
-                                    id: null,
-                                    device_type_id: '',
-                                    property_number: '',
-                                    serial_number: '',
-                                    brand: '',
-                                    model: '',
-                                    mac_address: '',
-                                    unit_price: '',
-                                    date_acquired: '',
-                                    last_maintenance_date: '',
-                                    maintenance_remarks: '',
-                                    notes: '',
-                                    status: 'available',
-                                    condition: 'serviceable',
-                                    specs: {
-                                        os: '',
-                                        memory: '',
-                                        storage: '',
-                                        form_factor: ''
-                                    }
-                                },
+                                        editDevice: {
+                                            id: null,
+                                            device_type_id: '',
+                                            property_number: '',
+                                            serial_number: '',
+                                            brand: '',
+                                            model: '',
+                                            mac_address: '',
+                                            unit_price: '',
+                                            date_acquired: '',
+                                            last_maintenance_date: '',
+                                            maintenance_remarks: '',
+                                            notes: '',
+                                            status: 'available',
+                                            condition: 'serviceable',
+                                            specs: {
+                                                os: '',
+                                                memory: '',
+                                                storage: '',
+                                                form_factor: ''
+                                            }
+                                        },
 
-                                deleteDeviceId: null,
+                                        deleteDeviceId: null,
 
-                                getTypeName(typeId) {
-                                    return (this.typeNames[typeId] || '').toLowerCase();
-                                },
+                                        getTypeName(typeId) {
+                                            return (this.typeNames[typeId] || '').toLowerCase();
+                                        },
 
-                                isComputerType(typeId) {
-                                    let name = this.getTypeName(typeId);
-                                    return name === 'desktop' || name === 'laptop';
-                                },
+                                        isComputerType(typeId) {
+                                            let name = this.getTypeName(typeId);
+                                            return name === 'desktop' || name === 'laptop';
+                                        },
 
-                                openEdit(device) {
-                                    device.specs = device.specs ?? {};
-                                    device.specs.os = device.specs.os ?? '';
-                                    device.specs.memory = device.specs.memory ?? '';
-                                    device.specs.storage = device.specs.storage ?? '';
-                                    device.specs.form_factor = device.specs.form_factor ?? '';
-                                    device.serial_number = device.serial_number ?? '';
-                                    device.status = device.status ?? 'available';
-                                    device.condition = device.condition ?? 'serviceable';
+                                        openEdit(device) {
+                                            device.specs = device.specs ?? {};
+                                            device.specs.os = device.specs.os ?? '';
+                                            device.specs.memory = device.specs.memory ?? '';
+                                            device.specs.storage = device.specs.storage ?? '';
+                                            device.specs.form_factor = device.specs.form_factor ?? '';
+                                            device.serial_number = device.serial_number ?? '';
+                                            device.status = device.status ?? 'available';
+                                            device.condition = device.condition ?? 'serviceable';
 
-                                    this.editDevice = device;
-                                    this.editOpen = true;
-                                },
+                                            this.editDevice = device;
+                                            this.editOpen = true;
+                                        },
 
-                                openDelete(id) {
-                                    this.deleteDeviceId = id;
-                                    this.deleteOpen = true;
-                                    this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
-                                }
-                            }" class="space-y-5">
+                                        openDelete(id) {
+                                            this.deleteDeviceId = id;
+                                            this.deleteOpen = true;
+                                            this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
+                                        }
+                                    }" class="space-y-5">
         <div class="flex items-start justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">
@@ -111,9 +111,11 @@
 
                 <div class="w-full lg:w-44">
                     <select name="type" onchange="this.form.submit()"
-                        class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                        <option value="" {{ empty($typeId) ? 'selected' : '' }}>
-                            Device Type
+                        class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        {{ empty($typeId) ? 'data-placeholder=true' : '' }}>
+
+                        <option value="" @selected(empty($typeId))>
+                            All Device Types
                         </option>
 
                         @foreach($types as $type)
@@ -127,8 +129,8 @@
                 <div class="w-full lg:w-44">
                     <select name="college" onchange="this.form.submit()"
                         class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                        <option value="" {{ empty($collegeId) ? 'selected' : '' }}>
-                            College
+                        <option value="" @selected(empty($collegeId))>
+                            All Colleges
                         </option>
 
                         @foreach($colleges as $college)
@@ -142,10 +144,9 @@
                 <div class="w-full lg:w-44">
                     <select name="condition" onchange="this.form.submit()"
                         class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                        <option value="" {{ empty($condition) ? 'selected' : '' }}>
-                            Condition
+                        <option value="" @selected(empty($condition))>
+                            All Conditions
                         </option>
-
                         <option value="serviceable" @selected($condition == 'serviceable')>
                             Serviceable
                         </option>
@@ -287,27 +288,27 @@
                             <button type="button"
                                 class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                 x-on:click="openEdit({
-                                                                                id: {{ $d->id }},
-                                                                                device_type_id: '{{ $d->device_type_id }}',
-                                                                                property_number: @js($d->property_number),
-                                                                                serial_number: @js($d->serial_number ?? ''),
-                                                                                brand: @js($d->brand ?? ''),
-                                                                                model: @js($d->model ?? ''),
-                                                                                mac_address: @js($d->mac_address ?? ''),
-                                                                                unit_price: @js($d->unit_price ?? ''),
-                                                                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                status: @js($d->status ?? 'available'),
-                                                                                condition: @js($d->condition ?? 'serviceable'),
-                                                                                notes: @js($d->notes ?? ''),
-                                                                                specs: {
-                                                                                    os: @js(data_get($d->specs, 'os', '')),
-                                                                                    memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                    storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                }
-                                                                            })">
+                                                                                                id: {{ $d->id }},
+                                                                                                device_type_id: '{{ $d->device_type_id }}',
+                                                                                                property_number: @js($d->property_number),
+                                                                                                serial_number: @js($d->serial_number ?? ''),
+                                                                                                brand: @js($d->brand ?? ''),
+                                                                                                model: @js($d->model ?? ''),
+                                                                                                mac_address: @js($d->mac_address ?? ''),
+                                                                                                unit_price: @js($d->unit_price ?? ''),
+                                                                                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                                                                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                                                                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                                                                                status: @js($d->status ?? 'available'),
+                                                                                                condition: @js($d->condition ?? 'serviceable'),
+                                                                                                notes: @js($d->notes ?? ''),
+                                                                                                specs: {
+                                                                                                    os: @js(data_get($d->specs, 'os', '')),
+                                                                                                    memory: @js(data_get($d->specs, 'memory', '')),
+                                                                                                    storage: @js(data_get($d->specs, 'storage', '')),
+                                                                                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                                                                                }
+                                                                                            })">
                                 Edit
                             </button>
 
@@ -410,27 +411,27 @@
                                         <button type="button"
                                             class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                             x-on:click="openEdit({
-                                                                                            id: {{ $d->id }},
-                                                                                            device_type_id: '{{ $d->device_type_id }}',
-                                                                                            property_number: @js($d->property_number),
-                                                                                            serial_number: @js($d->serial_number ?? ''),
-                                                                                            brand: @js($d->brand ?? ''),
-                                                                                            model: @js($d->model ?? ''),
-                                                                                            mac_address: @js($d->mac_address ?? ''),
-                                                                                            unit_price: @js($d->unit_price ?? ''),
-                                                                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                            status: @js($d->status ?? 'available'),
-                                                                                            condition: @js($d->condition ?? 'serviceable'),
-                                                                                            notes: @js($d->notes ?? ''),
-                                                                                            specs: {
-                                                                                                os: @js(data_get($d->specs, 'os', '')),
-                                                                                                memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                                storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                            }
-                                                                                        })">
+                                                                                                            id: {{ $d->id }},
+                                                                                                            device_type_id: '{{ $d->device_type_id }}',
+                                                                                                            property_number: @js($d->property_number),
+                                                                                                            serial_number: @js($d->serial_number ?? ''),
+                                                                                                            brand: @js($d->brand ?? ''),
+                                                                                                            model: @js($d->model ?? ''),
+                                                                                                            mac_address: @js($d->mac_address ?? ''),
+                                                                                                            unit_price: @js($d->unit_price ?? ''),
+                                                                                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                                                                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                                                                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                                                                                            status: @js($d->status ?? 'available'),
+                                                                                                            condition: @js($d->condition ?? 'serviceable'),
+                                                                                                            notes: @js($d->notes ?? ''),
+                                                                                                            specs: {
+                                                                                                                os: @js(data_get($d->specs, 'os', '')),
+                                                                                                                memory: @js(data_get($d->specs, 'memory', '')),
+                                                                                                                storage: @js(data_get($d->specs, 'storage', '')),
+                                                                                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                                                                                            }
+                                                                                                        })">
                                             Edit
                                         </button>
 
@@ -548,52 +549,54 @@
                             placeholder="Example: Tower, SFF, Mini PC, All-in-One" :disabled="!isComputerType(addTypeId)">
                     </div>
 
-                {{-- OS Version --}}
-                <div id="add_os_version_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">OS Version</label>
-                    <select name="os_version" id="add_os_version_select" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select OS --</option>
-                        <option value="Windows 7">Windows 7</option>
-                        <option value="Windows 8">Windows 8</option>
-                        <option value="Windows 10">Windows 10</option>
-                        <option value="Windows 11">Windows 11</option>
-                    </select>
-                </div>
+                    {{-- OS Version --}}
+                    <div id="add_os_version_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">OS Version</label>
+                        <select name="os_version" id="add_os_version_select"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select OS --</option>
+                            <option value="Windows 7">Windows 7</option>
+                            <option value="Windows 8">Windows 8</option>
+                            <option value="Windows 10">Windows 10</option>
+                            <option value="Windows 11">Windows 11</option>
+                        </select>
+                    </div>
 
-                {{-- OS License --}}
-                <div id="add_os_license_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">OS License</label>
-                    <select name="os_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                    </select>
-                </div>
+                    {{-- OS License --}}
+                    <div id="add_os_license_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">OS License</label>
+                        <select name="os_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select License --</option>
+                            <option value="Cracked">Cracked</option>
+                            <option value="OEM Licensed">OEM Licensed</option>
+                        </select>
+                    </div>
 
-                {{-- MS Office Version --}}
-                <div id="add_ms_version_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">MS Office Version</label>
-                    <select name="ms_office_version" id="add_ms_version_select" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select MS Office --</option>
-                        <option value="Office 2007">Office 2007</option>
-                        <option value="Office 2010">Office 2010</option>
-                        <option value="Office 2013">Office 2013</option>
-                        <option value="Office 2016">Office 2016</option>
-                        <option value="Office 2019">Office 2019</option>
-                        <option value="Office 2021">Office 2021</option>
-                        <option value="Microsoft 365">Microsoft 365</option>
-                    </select>
-                </div>
+                    {{-- MS Office Version --}}
+                    <div id="add_ms_version_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">MS Office Version</label>
+                        <select name="ms_office_version" id="add_ms_version_select"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select MS Office --</option>
+                            <option value="Office 2007">Office 2007</option>
+                            <option value="Office 2010">Office 2010</option>
+                            <option value="Office 2013">Office 2013</option>
+                            <option value="Office 2016">Office 2016</option>
+                            <option value="Office 2019">Office 2019</option>
+                            <option value="Office 2021">Office 2021</option>
+                            <option value="Microsoft 365">Microsoft 365</option>
+                        </select>
+                    </div>
 
-                {{-- MS Office License --}}
-                <div id="add_ms_license_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">MS Office License</label>
-                    <select name="ms_office_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                    </select>
-                </div>
+                    {{-- MS Office License --}}
+                    <div id="add_ms_license_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">MS Office License</label>
+                        <select name="ms_office_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select License --</option>
+                            <option value="Cracked">Cracked</option>
+                            <option value="OEM Licensed">OEM Licensed</option>
+                        </select>
+                    </div>
 
                     <div>
                         <label class="text-sm font-medium">Unit Price</label>
@@ -742,52 +745,54 @@
                             :disabled="!isComputerType(editDevice.device_type_id)">
                     </div>
 
-                {{-- OS Version --}}
-                <div id="edit_os_version_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">OS Version</label>
-                    <select name="os_version" id="edit_os_version_select" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select OS --</option>
-                        <option value="Windows 7">Windows 7</option>
-                        <option value="Windows 8">Windows 8</option>
-                        <option value="Windows 10">Windows 10</option>
-                        <option value="Windows 11">Windows 11</option>
-                    </select>
-                </div>
+                    {{-- OS Version --}}
+                    <div id="edit_os_version_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">OS Version</label>
+                        <select name="os_version" id="edit_os_version_select"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select OS --</option>
+                            <option value="Windows 7">Windows 7</option>
+                            <option value="Windows 8">Windows 8</option>
+                            <option value="Windows 10">Windows 10</option>
+                            <option value="Windows 11">Windows 11</option>
+                        </select>
+                    </div>
 
-                {{-- OS License --}}
-                <div id="edit_os_license_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">OS License</label>
-                    <select name="os_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                    </select>
-                </div>
+                    {{-- OS License --}}
+                    <div id="edit_os_license_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">OS License</label>
+                        <select name="os_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select License --</option>
+                            <option value="Cracked">Cracked</option>
+                            <option value="OEM Licensed">OEM Licensed</option>
+                        </select>
+                    </div>
 
-                {{-- MS Office Version --}}
-                <div id="edit_ms_version_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">MS Office Version</label>
-                    <select name="ms_office_version" id="edit_ms_version_select" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select MS Office --</option>
-                        <option value="Office 2007">Office 2007</option>
-                        <option value="Office 2010">Office 2010</option>
-                        <option value="Office 2013">Office 2013</option>
-                        <option value="Office 2016">Office 2016</option>
-                        <option value="Office 2019">Office 2019</option>
-                        <option value="Office 2021">Office 2021</option>
-                        <option value="Microsoft 365">Microsoft 365</option>
-                    </select>
-                </div>
+                    {{-- MS Office Version --}}
+                    <div id="edit_ms_version_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">MS Office Version</label>
+                        <select name="ms_office_version" id="edit_ms_version_select"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select MS Office --</option>
+                            <option value="Office 2007">Office 2007</option>
+                            <option value="Office 2010">Office 2010</option>
+                            <option value="Office 2013">Office 2013</option>
+                            <option value="Office 2016">Office 2016</option>
+                            <option value="Office 2019">Office 2019</option>
+                            <option value="Office 2021">Office 2021</option>
+                            <option value="Microsoft 365">Microsoft 365</option>
+                        </select>
+                    </div>
 
-                {{-- MS Office License --}}
-                <div id="edit_ms_license_wrapper" style="display:none;">
-                    <label class="text-sm font-medium">MS Office License</label>
-                    <select name="ms_office_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
-                        <option value="">-- Select License --</option>
-                        <option value="Cracked">Cracked</option>
-                        <option value="OEM Licensed">OEM Licensed</option>
-                    </select>
-                </div>
+                    {{-- MS Office License --}}
+                    <div id="edit_ms_license_wrapper" style="display:none;">
+                        <label class="text-sm font-medium">MS Office License</label>
+                        <select name="ms_office_license" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            <option value="">-- Select License --</option>
+                            <option value="Cracked">Cracked</option>
+                            <option value="OEM Licensed">OEM Licensed</option>
+                        </select>
+                    </div>
 
                     <div>
                         <label class="text-sm font-medium">Unit Price</label>
@@ -871,104 +876,104 @@
             </div>
         </x-modal>
     </div>
-@push('scripts')
-<script>
-(function () {
-    // ── ADD MODAL ──────────────────────────────────────────────
-    var typeNames = @json($types->pluck('name', 'id'));
+    @push('scripts')
+        <script>
+            (function () {
+                // ── ADD MODAL ──────────────────────────────────────────────
+                var typeNames = @json($types->pluck('name', 'id'));
 
-    function getTypeName(typeId) {
-        return (typeNames[typeId] || '').toLowerCase();
-    }
+                function getTypeName(typeId) {
+                    return (typeNames[typeId] || '').toLowerCase();
+                }
 
-    function isComputer(typeId) {
-        var name = getTypeName(typeId);
-        return name === 'desktop' || name === 'laptop';
-    }
+                function isComputer(typeId) {
+                    var name = getTypeName(typeId);
+                    return name === 'desktop' || name === 'laptop';
+                }
 
-    function show(el) { if (el) el.style.display = ''; }
-    function hide(el) { if (el) el.style.display = 'none'; }
+                function show(el) { if (el) el.style.display = ''; }
+                function hide(el) { if (el) el.style.display = 'none'; }
 
-    // --- ADD modal ---
-    var addTypeSelect    = document.querySelector('[x-model="addTypeId"]');
-    var addOsVerSel      = document.getElementById('add_os_version_select');
-    var addMsVerSel      = document.getElementById('add_ms_version_select');
-    var addOsVerWrap     = document.getElementById('add_os_version_wrapper');
-    var addOsLicWrap     = document.getElementById('add_os_license_wrapper');
-    var addMsVerWrap     = document.getElementById('add_ms_version_wrapper');
-    var addMsLicWrap     = document.getElementById('add_ms_license_wrapper');
+                // --- ADD modal ---
+                var addTypeSelect = document.querySelector('[x-model="addTypeId"]');
+                var addOsVerSel = document.getElementById('add_os_version_select');
+                var addMsVerSel = document.getElementById('add_ms_version_select');
+                var addOsVerWrap = document.getElementById('add_os_version_wrapper');
+                var addOsLicWrap = document.getElementById('add_os_license_wrapper');
+                var addMsVerWrap = document.getElementById('add_ms_version_wrapper');
+                var addMsLicWrap = document.getElementById('add_ms_license_wrapper');
 
-    function updateAddFields() {
-        var typeId = addTypeSelect ? addTypeSelect.value : '';
-        var computer = isComputer(typeId);
-        computer ? show(addOsVerWrap) : hide(addOsVerWrap);
-        computer ? show(addMsVerWrap) : hide(addMsVerWrap);
-        if (computer && addOsVerSel && addOsVerSel.value) { show(addOsLicWrap); } else { hide(addOsLicWrap); }
-        if (computer && addMsVerSel && addMsVerSel.value) { show(addMsLicWrap); } else { hide(addMsLicWrap); }
-    }
+                function updateAddFields() {
+                    var typeId = addTypeSelect ? addTypeSelect.value : '';
+                    var computer = isComputer(typeId);
+                    computer ? show(addOsVerWrap) : hide(addOsVerWrap);
+                    computer ? show(addMsVerWrap) : hide(addMsVerWrap);
+                    if (computer && addOsVerSel && addOsVerSel.value) { show(addOsLicWrap); } else { hide(addOsLicWrap); }
+                    if (computer && addMsVerSel && addMsVerSel.value) { show(addMsLicWrap); } else { hide(addMsLicWrap); }
+                }
 
-    if (addTypeSelect) {
-        addTypeSelect.addEventListener('change', updateAddFields);
-        // Also watch via MutationObserver since Alpine controls the value
-        new MutationObserver(updateAddFields).observe(addTypeSelect, { attributes: true, childList: true, subtree: true });
-    }
-    if (addOsVerSel) {
-        addOsVerSel.addEventListener('change', function () {
-            this.value ? show(addOsLicWrap) : hide(addOsLicWrap);
-        });
-    }
-    if (addMsVerSel) {
-        addMsVerSel.addEventListener('change', function () {
-            this.value ? show(addMsLicWrap) : hide(addMsLicWrap);
-        });
-    }
+                if (addTypeSelect) {
+                    addTypeSelect.addEventListener('change', updateAddFields);
+                    // Also watch via MutationObserver since Alpine controls the value
+                    new MutationObserver(updateAddFields).observe(addTypeSelect, { attributes: true, childList: true, subtree: true });
+                }
+                if (addOsVerSel) {
+                    addOsVerSel.addEventListener('change', function () {
+                        this.value ? show(addOsLicWrap) : hide(addOsLicWrap);
+                    });
+                }
+                if (addMsVerSel) {
+                    addMsVerSel.addEventListener('change', function () {
+                        this.value ? show(addMsLicWrap) : hide(addMsLicWrap);
+                    });
+                }
 
-    // --- EDIT modal ---
-    var editTypeSelect   = document.querySelector('[x-model="editDevice.device_type_id"]');
-    var editOsVerSel     = document.getElementById('edit_os_version_select');
-    var editMsVerSel     = document.getElementById('edit_ms_version_select');
-    var editOsVerWrap    = document.getElementById('edit_os_version_wrapper');
-    var editOsLicWrap    = document.getElementById('edit_os_license_wrapper');
-    var editMsVerWrap    = document.getElementById('edit_ms_version_wrapper');
-    var editMsLicWrap    = document.getElementById('edit_ms_license_wrapper');
+                // --- EDIT modal ---
+                var editTypeSelect = document.querySelector('[x-model="editDevice.device_type_id"]');
+                var editOsVerSel = document.getElementById('edit_os_version_select');
+                var editMsVerSel = document.getElementById('edit_ms_version_select');
+                var editOsVerWrap = document.getElementById('edit_os_version_wrapper');
+                var editOsLicWrap = document.getElementById('edit_os_license_wrapper');
+                var editMsVerWrap = document.getElementById('edit_ms_version_wrapper');
+                var editMsLicWrap = document.getElementById('edit_ms_license_wrapper');
 
-    function updateEditFields() {
-        var typeId = editTypeSelect ? editTypeSelect.value : '';
-        var computer = isComputer(typeId);
-        computer ? show(editOsVerWrap) : hide(editOsVerWrap);
-        computer ? show(editMsVerWrap) : hide(editMsVerWrap);
-        if (computer && editOsVerSel && editOsVerSel.value) { show(editOsLicWrap); } else { hide(editOsLicWrap); }
-        if (computer && editMsVerSel && editMsVerSel.value) { show(editMsLicWrap); } else { hide(editMsLicWrap); }
-    }
+                function updateEditFields() {
+                    var typeId = editTypeSelect ? editTypeSelect.value : '';
+                    var computer = isComputer(typeId);
+                    computer ? show(editOsVerWrap) : hide(editOsVerWrap);
+                    computer ? show(editMsVerWrap) : hide(editMsVerWrap);
+                    if (computer && editOsVerSel && editOsVerSel.value) { show(editOsLicWrap); } else { hide(editOsLicWrap); }
+                    if (computer && editMsVerSel && editMsVerSel.value) { show(editMsLicWrap); } else { hide(editMsLicWrap); }
+                }
 
-    if (editTypeSelect) {
-        editTypeSelect.addEventListener('change', updateEditFields);
-        new MutationObserver(updateEditFields).observe(editTypeSelect, { attributes: true, childList: true, subtree: true });
-    }
-    if (editOsVerSel) {
-        editOsVerSel.addEventListener('change', function () {
-            this.value ? show(editOsLicWrap) : hide(editOsLicWrap);
-        });
-    }
-    if (editMsVerSel) {
-        editMsVerSel.addEventListener('change', function () {
-            this.value ? show(editMsLicWrap) : hide(editMsLicWrap);
-        });
-    }
+                if (editTypeSelect) {
+                    editTypeSelect.addEventListener('change', updateEditFields);
+                    new MutationObserver(updateEditFields).observe(editTypeSelect, { attributes: true, childList: true, subtree: true });
+                }
+                if (editOsVerSel) {
+                    editOsVerSel.addEventListener('change', function () {
+                        this.value ? show(editOsLicWrap) : hide(editOsLicWrap);
+                    });
+                }
+                if (editMsVerSel) {
+                    editMsVerSel.addEventListener('change', function () {
+                        this.value ? show(editMsLicWrap) : hide(editMsLicWrap);
+                    });
+                }
 
-    // Run on load
-    updateAddFields();
-    updateEditFields();
+                // Run on load
+                updateAddFields();
+                updateEditFields();
 
-    // Re-run when modals open (Alpine toggles visibility)
-    document.addEventListener('click', function () {
-        setTimeout(function () {
-            updateAddFields();
-            updateEditFields();
-        }, 100);
-    });
-})();
-</script>
-@endpush
+                // Re-run when modals open (Alpine toggles visibility)
+                document.addEventListener('click', function () {
+                    setTimeout(function () {
+                        updateAddFields();
+                        updateEditFields();
+                    }, 100);
+                });
+            })();
+        </script>
+    @endpush
 
 @endsection

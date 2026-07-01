@@ -61,7 +61,11 @@ class DeviceController extends Controller
             ->withQueryString();
 
         $types = $this->allowedDeviceTypes();
-        $colleges = College::orderBy('name')->get();
+        $colleges = College::query()
+            ->whereNotNull('code')
+            ->where('code', '<>', '')
+            ->orderBy('code')
+            ->get();
 
         return view('admin.devices.index', compact(
             'devices',
