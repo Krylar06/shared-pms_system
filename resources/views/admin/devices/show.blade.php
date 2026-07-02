@@ -41,7 +41,7 @@
     }"
     class="grid grid-cols-1 gap-6 lg:grid-cols-3"
 >
-</div>
+
     <div class="lg:col-span-2">
         <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex items-start justify-between gap-4">
@@ -77,13 +77,12 @@
                         Mark as Checked
                     </a>
 
-                    <button
-                        type="button"
-                        x-on:click.prevent.stop="editOpen = true"
-                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    <a
+                        href="{{ route('admin.devices.edit', $device) }}"
+                         class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                     >
-                        Edit
-                    </button>
+                         Edit
+                    </a>
 
                     @if(auth()->user()->isAdmin())
                         <form
@@ -293,6 +292,7 @@
     <div
         x-show="editOpen"
         x-cloak
+        x-transition.opacity
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
         <div
