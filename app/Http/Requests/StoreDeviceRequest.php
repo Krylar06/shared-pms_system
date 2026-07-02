@@ -43,6 +43,8 @@ class StoreDeviceRequest extends FormRequest
                 'regex:' . self::SERIAL_NUMBER_REGEX,
             ],
 
+            'computer_name' => ['nullable', 'string', 'max:100'],
+
             'brand' => ['nullable', 'string', 'max:100', 'regex:' . self::BRAND_MODEL_REGEX],
             'model' => ['nullable', 'string', 'max:100', 'regex:' . self::BRAND_MODEL_REGEX],
             'mac_address' => ['nullable', 'string', 'regex:' . self::MAC_ADDRESS_REGEX],

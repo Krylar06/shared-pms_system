@@ -59,6 +59,20 @@
                 @enderror
             </div>
 
+            {{-- Computer Name --}}
+            <div>
+                <label class="text-sm font-medium">Computer Name</label>
+                <input name="computer_name"
+                       value="{{ old('computer_name', $device->computer_name) }}"
+                       class="mt-1 w-full border rounded px-3 py-2"
+                       maxlength="100"
+                       pattern="[A-Za-z0-9][A-Za-z0-9\-\s]*"
+                       title="Letters and numbers only">
+                @error('computer_name')
+                    <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                @enderror
+            </div>
+
             {{-- Brand --}}
             <div>
                 <label class="text-sm font-medium">Brand</label>
@@ -72,6 +86,7 @@
                     <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                 @enderror
             </div>
+
 
             {{-- Unit Price --}}
             <div>

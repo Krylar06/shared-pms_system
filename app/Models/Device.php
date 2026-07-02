@@ -13,6 +13,7 @@ class Device extends Model
         'device_type_id',
         'property_number',
         'serial_number',
+        'computer_name',
         'brand',
         'model',
         'mac_address',

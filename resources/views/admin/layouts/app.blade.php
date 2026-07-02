@@ -108,6 +108,18 @@
                     <span>Equipment Manager</span>
                 </a>
 
+
+                <a
+                    href="{{ route('admin.reports.index') }}"
+                    class="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
+                    {{ request()->routeIs('admin.reports.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100' }}"
+                >
+                    <svg class="w-5 h-5 {{ request()->routeIs('admin.reports.*') ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-6m4 6V7m4 10v-3M5 19h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Reports</span>
+                </a>
+
                 <a
                     href="{{ route('admin.scanner') }}"
                     class="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
@@ -196,6 +208,11 @@
 
                     <h1 class="truncate text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                         @yield('page_title', 'Admin')
+                        @if(trim($__env->yieldContent('breadcrumbs')))
+                            <nav class="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                              @yield('breadcrumbs')
+                            </nav>
+                    @endif
                     </h1>
                 </div>
 
@@ -292,6 +309,11 @@
                                     {{ auth()->user()->email ?? 'admin@example.com' }}
                                 </div>
                             </div>
+                        <div class="py-2">
+                            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Dashboard</a>
+                            <a href="{{ route('admin.devices.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Device Manager</a>
+                            <a href="{{ route('admin.reports.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Reports</a>
+                            <a href="{{ route('admin.scanner') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">QR Scanner</a>
 
                             <div class="py-2">
                                 <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700">Dashboard</a>
