@@ -8,10 +8,35 @@
     {{-- Apply saved theme BEFORE paint, to avoid a flash of the wrong colors --}}
     <script>
         (function () {
-            const saved = localStorage.getItem('theme') || 'system';
-            const isDark = saved === 'dark' ||
-                (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            document.documentElement.classList.toggle('dark', isDark);
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+            function savedTheme() {
+                return localStorage.getItem('theme') || 'system';
+            }
+
+            function shouldUseDark(mode) {
+                return mode === 'dark' || (mode === 'system' && mediaQuery.matches);
+            }
+
+            window.getSavedTheme = function () {
+                return savedTheme();
+            };
+
+            window.setTheme = function (mode) {
+                localStorage.setItem('theme', mode);
+                document.documentElement.classList.toggle('dark', shouldUseDark(mode));
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: mode } }));
+            };
+
+            window.setTheme(savedTheme());
+
+            if (mediaQuery.addEventListener) {
+                mediaQuery.addEventListener('change', function () {
+                    if (savedTheme() === 'system') {
+                        window.setTheme('system');
+                    }
+                });
+            }
         })();
     </script>
 
@@ -20,6 +45,126 @@
 
     <style>
         [x-cloak] { display: none !important; }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global dark mode safety layer
+        |--------------------------------------------------------------------------
+        | This makes the dark-mode toggle affect pages that still use light-only
+        | Tailwind classes after the GitHub merge. It is intentionally global so
+        | every admin page becomes readable in dark mode without editing each Blade.
+        */
+        html.dark {
+            color-scheme: dark;
+        }
+
+        html.dark body,
+        html.dark main {
+            background-color: #0f172a !important;
+            color: #e5e7eb !important;
+        }
+
+        html.dark .bg-white {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark .bg-gray-50 {
+            background-color: #111827 !important;
+        }
+
+        html.dark .bg-gray-100 {
+            background-color: #374151 !important;
+        }
+
+        html.dark .bg-gray-200 {
+            background-color: #4b5563 !important;
+        }
+
+        html.dark .border-gray-100,
+        html.dark .border-gray-200,
+        html.dark .border-gray-300 {
+            border-color: #374151 !important;
+        }
+
+        html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+            border-color: #374151 !important;
+        }
+
+        html.dark .text-gray-400 {
+            color: #9ca3af !important;
+        }
+
+        html.dark .text-gray-500,
+        html.dark .text-gray-600 {
+            color: #d1d5db !important;
+        }
+
+        html.dark .text-gray-700,
+        html.dark .text-gray-800,
+        html.dark .text-gray-900 {
+            color: #f9fafb !important;
+        }
+
+        html.dark input,
+        html.dark select,
+        html.dark textarea {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f9fafb !important;
+        }
+
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        html.dark select option {
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+        }
+
+        html.dark table thead,
+        html.dark thead.bg-gray-50 {
+            background-color: #111827 !important;
+            color: #d1d5db !important;
+        }
+
+        html.dark tbody tr:hover,
+        html.dark .hover\:bg-gray-50:hover {
+            background-color: rgba(55, 65, 81, 0.55) !important;
+        }
+
+        html.dark .shadow-sm,
+        html.dark .shadow,
+        html.dark .shadow-md,
+        html.dark .shadow-lg,
+        html.dark .shadow-xl {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html.dark .hover\:bg-gray-100:hover,
+        html.dark .hover\:bg-gray-200:hover {
+            background-color: #4b5563 !important;
+        }
+
+        html.dark .hover\:text-blue-600:hover,
+        html.dark .text-blue-600,
+        html.dark .text-blue-700 {
+            color: #60a5fa !important;
+        }
+
+        html.dark .rounded-2xl.bg-white,
+        html.dark .rounded-xl.bg-white,
+        html.dark .rounded-lg.bg-white {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark .modal,
+        html.dark [role="dialog"] {
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+        }
+
     </style>
 </head>
 
@@ -209,7 +354,7 @@
                     <h1 class="truncate text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                         @yield('page_title', 'Admin')
                         @if(trim($__env->yieldContent('breadcrumbs')))
-                            <nav class="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                            <nav class="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                               @yield('breadcrumbs')
                             </nav>
                     @endif
