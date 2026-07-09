@@ -17,52 +17,69 @@
     $deviceUrl = route('admin.devices.show', $device);
 @endphp
 
+<script>
+    window.deviceDetailsPage = function () {
+        return {
+            editOpen: false,
+            selectedTypeId: @json(old('device_type_id', $device->device_type_id)),
+            typeNames: @json($types->pluck('name', 'id')),
+
+            getTypeName: function (typeId) {
+                return (this.typeNames[typeId] || '').toLowerCase();
+            },
+
+            isComputerType: function (typeId) {
+                var selected = typeId || this.selectedTypeId;
+                var name = this.getTypeName(selected);
+
+                return name === 'desktop' || name === 'laptop';
+            },
+
+            isDesktopType: function (typeId) {
+                var selected = typeId || this.selectedTypeId;
+
+                return this.getTypeName(selected) === 'desktop';
+            },
+
+            formatUnitPriceValue: function (value) {
+                value = String(value || '').replace(/[^0-9.]/g, '');
+
+                var parts = value.split('.');
+                var whole = parts.shift() || '';
+                var decimals = parts.length ? '.' + parts.join('').slice(0, 2) : '';
+
+                whole = whole.replace(/^0+(?=\d)/, '');
+                whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                return whole + decimals;
+            },
+
+            formatUnitPriceInput: function (event) {
+                event.target.value = this.formatUnitPriceValue(event.target.value);
+            },
+
+            cleanUnitPrices: function (form) {
+                form.querySelectorAll('.unit-price-input').forEach(function (input) {
+                    input.value = String(input.value || '').replace(/,/g, '');
+                });
+            },
+
+            initUnitPrices: function (root) {
+                var self = this;
+
+                this.$nextTick(function () {
+                    root.querySelectorAll('.unit-price-input').forEach(function (input) {
+                        input.value = self.formatUnitPriceValue(input.value);
+                    });
+                });
+            }
+        };
+    };
+</script>
+
 <div
-    x-data="{
-        editOpen: false,
-        selectedTypeId: @json(old('device_type_id', $device->device_type_id)),
-
-        typeNames: @json($types->pluck('name', 'id')),
-        getTypeName(typeId) {
-            return (this.typeNames[typeId] || '').toLowerCase();
-        },
-
-        isComputerType(typeId = null) {
-            let selected = typeId ?? this.selectedTypeId;
-            let name = this.getTypeName(selected);
-
-            return name === 'desktop' || name === 'laptop';
-        },
-
-        isDesktopType(typeId = null) {
-            let selected = typeId ?? this.selectedTypeId;
-            return this.getTypeName(selected) === 'desktop';
-        },
-
-        formatUnitPriceValue(value) {
-            value = String(value ?? '').replace(/[^0-9.]/g, '');
-
-            let parts = value.split('.');
-            let whole = parts.shift() || '';
-            let decimals = parts.length ? '.' + parts.join('').slice(0, 2) : '';
-
-            whole = whole.replace(/^0+(?=\d)/, '');
-            whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-            return whole + decimals;
-        },
-
-        formatUnitPriceInput(event) {
-            event.target.value = this.formatUnitPriceValue(event.target.value);
-        },
-
-        cleanUnitPrices(form) {
-            form.querySelectorAll('.unit-price-input').forEach((input) => {
-                input.value = String(input.value ?? '').replace(/,/g, '');
-            });
-        }
-    }"
-    x-init="$nextTick(() => $el.querySelectorAll('.unit-price-input').forEach((input) => input.value = formatUnitPriceValue(input.value)))"
+    x-data="deviceDetailsPage()"
+    x-init="initUnitPrices($el)"
     class="grid grid-cols-1 gap-6 lg:grid-cols-3"
 >
     <div class="lg:col-span-2">
@@ -101,8 +118,9 @@
                     </a>
 
                     <button
+                        id="open-edit-device-modal"
                         type="button"
-                        x-on:click.prevent.stop="editOpen = true"
+                        x-on:click="editOpen = true"
                         class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                     >
                         Edit
@@ -314,8 +332,10 @@
 
     {{-- EDIT MODAL --}}
     <div
+        id="edit-device-modal"
         x-show="editOpen"
         x-cloak
+        @keydown.escape.window="editOpen = false"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
         <div
