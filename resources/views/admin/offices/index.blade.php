@@ -267,7 +267,7 @@ document.addEventListener('alpine:init', () => {
                         <template x-for="(row, idx) in bulkRows" :key="idx">
                             <div class="space-y-3" :class="idx > 0 ? 'pt-4 border-t border-gray-200' : ''">
                                 <div>
-                                    <label class="text-sm font-medium">Office Name</label>
+                                    <label class="text-sm font-medium">Office Name <span class="text-red-500">*</span></label>
                                     <input
                                         :name="`names[${idx}]`"
                                         x-model="row.name"
@@ -289,7 +289,7 @@ document.addEventListener('alpine:init', () => {
                 <template x-if="!bulkEnabled">
                     <div class="space-y-3">
                         <div>
-                            <label class="text-sm font-medium">Office Name</label>
+                            <label class="text-sm font-medium">Office Name <span class="text-red-500">*</span></label>
                             <input
                                 name="name"
                                 x-model="addSingle.name"
@@ -332,7 +332,7 @@ document.addEventListener('alpine:init', () => {
             <input type="hidden" name="editing_id" :value="editOffice.id">
 
             <div>
-                <label class="text-sm font-medium">Office Name</label>
+                <label class="text-sm font-medium">Office Name <span class="text-red-500">*</span></label>
                 <input
                     name="name"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"

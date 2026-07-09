@@ -48,6 +48,10 @@
                                             return name === 'desktop' || name === 'laptop';
                                         },
 
+                                        isDesktopType(typeId) {
+    return this.getTypeName(typeId) === 'desktop';
+},
+
                                         openEdit(device) {
                                             device.specs = device.specs ?? {};
                                             device.specs.os = device.specs.os ?? '';
@@ -174,9 +178,10 @@
         <div class="grid grid-cols-1 gap-3 md:hidden">
             @forelse($devices as $d)
                 @php
-                    $deviceTypeName = strtolower($d->type?->name ?? '');
-                    $isComputer = in_array($deviceTypeName, ['desktop', 'laptop']);
-                @endphp
+    $deviceTypeName = strtolower($d->type?->name ?? '');
+    $isDesktop = $deviceTypeName === 'desktop';
+    $isComputerDevice = in_array($deviceTypeName, ['desktop', 'laptop'], true);
+@endphp
 
                 <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="space-y-3">
@@ -212,7 +217,7 @@
                                 </div>
                             </div>
 
-                            @if($isComputer)
+                            @if($isComputerDevice)
                                 <div>
                                     <div class="text-gray-500">MAC Address</div>
                                     <div class="text-gray-900">
@@ -241,12 +246,14 @@
                                     </div>
                                 </div>
 
-                                <div>
-                                    <div class="text-gray-500">Form Factor</div>
-                                    <div class="text-gray-900">
-                                        {{ data_get($d->specs, 'form_factor', '-') ?: '-' }}
+                                @if($isDesktop)
+                                    <div>
+                                        <div class="text-gray-500">Form Factor</div>
+                                        <div class="text-gray-900">
+                                            {{ data_get($d->specs, 'form_factor', '-') ?: '-' }}
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
                             @endif
 
                             <div>
@@ -542,11 +549,11 @@
                             placeholder="Example: 256GB SSD / 1TB HDD" :disabled="!isComputerType(addTypeId)">
                     </div>
 
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
+                    <div x-show="isDesktopType(addTypeId)" x-cloak>
                         <label class="text-sm font-medium">Form Factor</label>
                         <input name="specs[form_factor]" value="{{ old('specs.form_factor') }}"
                             class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2" maxlength="50"
-                            placeholder="Example: Tower, SFF, Mini PC, All-in-One" :disabled="!isComputerType(addTypeId)">
+                            placeholder="Example: Tower, SFF, Mini PC, All-in-One" :disabled="!isDesktopType(addTypeId)">
                     </div>
 
                     {{-- OS Version --}}
@@ -698,7 +705,7 @@
                         <input name="brand" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                             x-model="editDevice.brand" maxlength="100" pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.\-\s]*"
                             title="Letters and numbers only">
-                    </div>
+                        </div>
 
                     <div>
                         <label class="text-sm font-medium">Model</label>
@@ -737,12 +744,12 @@
                             :disabled="!isComputerType(editDevice.device_type_id)">
                     </div>
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                    <div x-show="isDesktopType(editDevice.device_type_id)" x-cloak>
                         <label class="text-sm font-medium">Form Factor</label>
                         <input name="specs[form_factor]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                             x-model="editDevice.specs.form_factor" maxlength="50"
                             placeholder="Example: Tower, SFF, Mini PC, All-in-One"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
+                            :disabled="!isDesktopType(editDevice.device_type_id)">
                     </div>
 
                     {{-- OS Version --}}
@@ -887,9 +894,9 @@
                 }
 
                 function isComputer(typeId) {
-                    var name = getTypeName(typeId);
-                    return name === 'desktop' || name === 'laptop';
-                }
+    var name = getTypeName(typeId);
+    return name === 'desktop' || name === 'laptop';
+}
 
                 function show(el) { if (el) el.style.display = ''; }
                 function hide(el) { if (el) el.style.display = 'none'; }

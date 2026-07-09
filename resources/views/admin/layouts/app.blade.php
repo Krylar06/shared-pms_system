@@ -13,7 +13,7 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
 <div
     x-data="{
         sidebarOpen: false,

@@ -13,6 +13,31 @@ class OfficeController extends Controller
 {
     private const NAME_REGEX = '/^[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&\'\-\(\)\s]*$/u';
 
+    private function buildSummary(Office $office): array
+    {
+        $office->loadMissing('college');
+
+        return [
+            'office' => $office->name,
+            'college' => optional($office->college)->name,
+        ];
+    }
+
+    private function buildCreateSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
+    private function buildUpdateSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
+    private function buildDeleteSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
     public function index(College $college)
     {
         $offices = Office::where('college_id', $college->id)->orderBy('name')->paginate(15);
@@ -65,14 +90,30 @@ class OfficeController extends Controller
                 'names.*' => 'office name',
             ]);
 
+            $items = [];
+
             foreach (range(0, $count - 1) as $i) {
+
                 $office = Office::create([
                     'college_id' => $college->id,
                     'name' => $data['names'][$i],
                 ]);
 
-                ActivityLog::record('created', "Created office \"{$office->name}\" in \"{$college->name}\" (bulk add)", $office);
+                $items[] = [
+                    'summary' => $this->buildCreateSummary($office),
+                ];
             }
+
+            ActivityLog::record(
+                'created',
+                "Created {$count} office(s) (Bulk Add)",
+                null,
+                ActivityLog::makePayload([
+                    'bulk' => true,
+                    'record_type' => 'Office',
+                    'items' => $items,
+                ])
+            );
 
             return back()->with('success', 'Offices created.');
         }
@@ -96,7 +137,14 @@ class OfficeController extends Controller
             'name' => $data['name'],
         ]);
 
-        ActivityLog::record('created', "Created office \"{$office->name}\" in \"{$college->name}\"", $office);
+        ActivityLog::record(
+            'created',
+            "Created office \"{$office->name}\"",
+            $office,
+            ActivityLog::makePayload(
+                $this->buildCreateSummary($office)
+            )
+        );
 
         return back()->with('success', 'Office created.');
     }
@@ -124,9 +172,28 @@ class OfficeController extends Controller
             'name.unique' => 'This office name already exists in this college.',
         ]);
 
+        $before = [
+    'office' => $office->name,
+    'college' => optional($office->college)->name,
+];
+
         $office->update($data);
 
-        ActivityLog::record('updated', "Updated office \"{$office->name}\" in \"{$college->name}\"", $office);
+        ActivityLog::record(
+            'updated',
+            "Updated office \"{$office->name}\"",
+            $office,
+            ActivityLog::makePayload(
+                $this->buildUpdateSummary($office),
+                ActivityLog::buildChanges(
+    $before,
+    [
+        'office' => $office->name,
+        'college' => optional($office->college)->name,
+    ]
+)
+            )
+        );
 
         return redirect()->route('admin.offices.index', $college)->with('success', 'Office updated.');
     }
@@ -135,9 +202,17 @@ class OfficeController extends Controller
     {
         abort_unless($office->college_id === $college->id, 404);
         $name = $office->name;
+        $summary = $this->buildDeleteSummary($office);
+
+        ActivityLog::record(
+            'deleted',
+            "Deleted office \"{$name}\"",
+            $office,
+            ActivityLog::makePayload($summary)
+        );
+
         $office->delete();
 
-        ActivityLog::record('deleted', "Deleted office \"{$name}\" from \"{$college->name}\"");
 
         return back()->with('success', 'Office deleted.');
     }

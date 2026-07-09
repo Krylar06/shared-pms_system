@@ -111,8 +111,47 @@ class DeviceController extends Controller
         $data = $this->cleanDeviceDataByType($data);
 
         $device = Device::create($data);
+        $device->load('type');
 
-        ActivityLog::record('created', "Added device \"{$device->property_number}\"", $device);
+        $summary = [
+            'property_number' => $device->property_number,
+            'device_type' => optional($device->type)->name,
+            'brand' => $device->brand,
+        ];
+
+        if ($this->isComputerDevice(optional($device->type)->name)) {
+            $summary['computer_name'] =
+                $device->computer_name ?: data_get($device->specs, 'computer_name');
+        }
+
+        foreach ([
+            'model' => $device->model,
+            'serial_number' => $device->serial_number,
+            'mac_address' => $device->mac_address,
+            'windows_version' => $device->os_version,
+            'windows_license' => $device->os_license,
+            'ms_office_version' => $device->ms_office_version,
+            'ms_office_license' => $device->ms_office_license,
+            'memory' => data_get($device->specs, 'memory'),
+            'storage' => data_get($device->specs, 'storage'),
+            'form_factor' => data_get($device->specs, 'form_factor'),
+            'unit_price' => $device->unit_price,
+            'condition' => $device->condition,
+            'status' => $device->status,
+            'maintenance_remarks' => $device->maintenance_remarks,
+            'notes' => $device->notes,
+        ] as $key => $value) {
+            if (filled($value)) {
+                $summary[$key] = $value;
+            }
+        }
+
+        ActivityLog::record(
+            'created',
+            "Added device \"{$device->property_number}\"",
+            $device,
+            ActivityLog::makePayload($summary)
+        );
 
         return redirect()
             ->back()
@@ -160,9 +199,105 @@ class DeviceController extends Controller
 
         $data = $this->cleanDeviceDataByType($data);
 
-        $device->update($data);
+        $before = [
+            'property_number' => $device->property_number,
+            'device_type' => optional($device->type)->name,
+            'computer_name' => $device->computer_name ?: data_get($device->specs, 'computer_name'),
+            'brand' => $device->brand,
+            'model' => $device->model,
+            'serial_number' => $device->serial_number,
+            'mac_address' => $device->mac_address,
 
-        ActivityLog::record('updated', "Updated device \"{$device->property_number}\"", $device);
+            'windows_version' => $device->os_version,
+            'windows_license' => $device->os_license,
+            'ms_office_version' => $device->ms_office_version,
+            'ms_office_license' => $device->ms_office_license,
+
+            'memory' => data_get($device->specs, 'memory'),
+            'storage' => data_get($device->specs, 'storage'),
+            'form_factor' => data_get($device->specs, 'form_factor'),
+
+            'unit_price' => $device->unit_price,
+
+            'condition' => $device->condition,
+            'status' => $device->status,
+            'maintenance_remarks' => $device->maintenance_remarks,
+            'notes' => $device->notes,
+        ];
+
+        $device->update($data);
+        $device->load('type');
+
+        $summary = [
+            'property_number' => $device->property_number,
+            'device_type' => optional($device->type)->name,
+            'brand' => $device->brand,
+        ];
+
+        if ($this->isComputerDevice(optional($device->type)->name)) {
+            $summary['computer_name'] =
+                $device->computer_name ?: data_get($device->specs, 'computer_name');
+        }
+
+        foreach ([
+            'model' => $device->model,
+            'serial_number' => $device->serial_number,
+            'mac_address' => $device->mac_address,
+            'windows_version' => $device->os_version,
+            'windows_license' => $device->os_license,
+            'ms_office_version' => $device->ms_office_version,
+            'ms_office_license' => $device->ms_office_license,
+            'memory' => data_get($device->specs, 'memory'),
+            'storage' => data_get($device->specs, 'storage'),
+            'form_factor' => data_get($device->specs, 'form_factor'),
+            'unit_price' => $device->unit_price,
+            'condition' => $device->condition,
+            'status' => $device->status,
+            'maintenance_remarks' => $device->maintenance_remarks,
+            'notes' => $device->notes,
+        ] as $key => $value) {
+
+            if (filled($value)) {
+                $summary[$key] = $value;
+            }
+        }
+
+        ActivityLog::record(
+            'updated',
+            "Updated device \"{$device->property_number}\"",
+            $device,
+            ActivityLog::makePayload(
+                $summary,
+                ActivityLog::buildChanges(
+                    $before,
+                    [
+                        'property_number' => $device->property_number,
+                        'device_type' => optional($device->type)->name,
+                        'computer_name' => $device->computer_name ?: data_get($device->specs, 'computer_name'),
+                        'brand' => $device->brand,
+                        'model' => $device->model,
+                        'serial_number' => $device->serial_number,
+                        'mac_address' => $device->mac_address,
+
+                        'windows_version' => $device->os_version,
+                        'windows_license' => $device->os_license,
+                        'ms_office_version' => $device->ms_office_version,
+                        'ms_office_license' => $device->ms_office_license,
+
+                        'memory' => data_get($device->specs, 'memory'),
+                        'storage' => data_get($device->specs, 'storage'),
+                        'form_factor' => data_get($device->specs, 'form_factor'),
+
+                        'unit_price' => $device->unit_price,
+
+                        'condition' => $device->condition,
+                        'status' => $device->status,
+                        'maintenance_remarks' => $device->maintenance_remarks,
+                        'notes' => $device->notes,
+                    ]
+                ) ?? []
+            )
+        );
 
         return redirect()
             ->route('admin.devices.index')
@@ -171,11 +306,59 @@ class DeviceController extends Controller
 
     public function destroy(Device $device)
     {
-        $propertyNumber = $device->property_number;
+        $deviceType = DeviceType::where('id', $device->device_type_id)->value('name');
+        $isComputer = $this->isComputerDevice($deviceType);
+        $isDesktop = strtolower((string) $deviceType) === 'desktop';
+
+        $summary = [
+            'property_number' => $device->property_number,
+            'device_type' => $deviceType,
+            'brand' => $device->brand,
+        ];
+
+        if ($isComputer) {
+            $summary['computer_name'] = $device->computer_name ?: data_get($device->specs, 'computer_name');
+        }
+
+        $summary += [
+            'model' => $device->model,
+            'serial_number' => $device->serial_number,
+            'unit_price' => $device->unit_price,
+            'condition' => $device->condition,
+            'status' => $device->status,
+            'maintenance_remarks' => $device->maintenance_remarks,
+            'notes' => $device->notes,
+        ];
+
+        // Deleted-device snapshot: show every applicable field regardless of
+        // whether it has a value, so the log preserves the device's full
+        // last-known state. date_acquired and last_maintenance_date are
+        // intentionally left out of this snapshot entirely.
+        if ($isComputer) {
+            $summary += [
+                'mac_address' => $device->mac_address,
+                'windows_version' => $device->os_version,
+                'windows_license' => $device->os_license,
+                'ms_office_version' => $device->ms_office_version,
+                'ms_office_license' => $device->ms_office_license,
+                'memory' => data_get($device->specs, 'memory'),
+                'storage' => data_get($device->specs, 'storage'),
+            ];
+
+            // Form factor only applies to desktops, never laptops.
+            if ($isDesktop) {
+                $summary['form_factor'] = data_get($device->specs, 'form_factor');
+            }
+        }
+
+        ActivityLog::record(
+            'deleted',
+            "Deleted device \"{$summary['property_number']}\"",
+            $device,
+            ActivityLog::makePayload($summary)
+        );
+
         $device->delete();
-
-        ActivityLog::record('deleted', "Deleted device \"{$propertyNumber}\"");
-
         return redirect()
             ->route('admin.devices.index')
             ->with('success', 'Device deleted.');
@@ -251,9 +434,105 @@ class DeviceController extends Controller
 
         $data = $this->cleanDeviceDataByType($data);
 
-        $device->update($data);
+        $before = [
+            'property_number' => $device->property_number,
+            'device_type' => optional($device->type)->name,
+            'computer_name' => $device->computer_name ?: data_get($device->specs, 'computer_name'),
+            'brand' => $device->brand,
+            'model' => $device->model,
+            'serial_number' => $device->serial_number,
+            'mac_address' => $device->mac_address,
 
-        ActivityLog::record('updated', "Updated device \"{$device->property_number}\" (quick edit)", $device);
+            'windows_version' => $device->os_version,
+            'windows_license' => $device->os_license,
+            'ms_office_version' => $device->ms_office_version,
+            'ms_office_license' => $device->ms_office_license,
+
+            'memory' => data_get($device->specs, 'memory'),
+            'storage' => data_get($device->specs, 'storage'),
+            'form_factor' => data_get($device->specs, 'form_factor'),
+
+            'unit_price' => $device->unit_price,
+
+            'condition' => $device->condition,
+            'status' => $device->status,
+            'maintenance_remarks' => $device->maintenance_remarks,
+            'notes' => $device->notes,
+        ];
+
+        $device->update($data);
+        $device->load('type');
+
+        $summary = [
+            'property_number' => $device->property_number,
+            'device_type' => optional($device->type)->name,
+            'brand' => $device->brand,
+        ];
+
+        if ($this->isComputerDevice(optional($device->type)->name)) {
+            $summary['computer_name'] =
+                $device->computer_name ?: data_get($device->specs, 'computer_name');
+        }
+
+        foreach ([
+            'model' => $device->model,
+            'serial_number' => $device->serial_number,
+            'mac_address' => $device->mac_address,
+            'windows_version' => $device->os_version,
+            'windows_license' => $device->os_license,
+            'ms_office_version' => $device->ms_office_version,
+            'ms_office_license' => $device->ms_office_license,
+            'memory' => data_get($device->specs, 'memory'),
+            'storage' => data_get($device->specs, 'storage'),
+            'form_factor' => data_get($device->specs, 'form_factor'),
+            'unit_price' => $device->unit_price,
+            'condition' => $device->condition,
+            'status' => $device->status,
+            'maintenance_remarks' => $device->maintenance_remarks,
+            'notes' => $device->notes,
+        ] as $key => $value) {
+
+            if (filled($value)) {
+                $summary[$key] = $value;
+            }
+        }
+
+        ActivityLog::record(
+            'updated',
+            "Updated device \"{$device->property_number}\"",
+            $device,
+            ActivityLog::makePayload(
+                $summary,
+                ActivityLog::buildChanges(
+                    $before,
+                    [
+                        'property_number' => $device->property_number,
+                        'device_type' => optional($device->type)->name,
+                        'computer_name' => $device->computer_name ?: data_get($device->specs, 'computer_name'),
+                        'brand' => $device->brand,
+                        'model' => $device->model,
+                        'serial_number' => $device->serial_number,
+                        'mac_address' => $device->mac_address,
+
+                        'windows_version' => $device->os_version,
+                        'windows_license' => $device->os_license,
+                        'ms_office_version' => $device->ms_office_version,
+                        'ms_office_license' => $device->ms_office_license,
+
+                        'memory' => data_get($device->specs, 'memory'),
+                        'storage' => data_get($device->specs, 'storage'),
+                        'form_factor' => data_get($device->specs, 'form_factor'),
+
+                        'unit_price' => $device->unit_price,
+
+                        'condition' => $device->condition,
+                        'status' => $device->status,
+                        'maintenance_remarks' => $device->maintenance_remarks,
+                        'notes' => $device->notes,
+                    ]
+                ) ?? []
+            )
+        );
 
         return back()->with('success', 'Device updated.');
     }
@@ -289,7 +568,18 @@ class DeviceController extends Controller
             'maintenance_remarks' => $remarks,
         ]);
 
-        ActivityLog::record('updated', "Marked device \"{$device->property_number}\" as checked/maintained", $device);
+        ActivityLog::record(
+            'updated',
+            "Updated maintenance for device \"{$device->property_number}\"",
+            $device,
+            ActivityLog::makePayload([
+                'property_number' => $device->property_number,
+                'device_type' => optional($device->type)->name,
+                'maintenance_date' => $maintenanceDate,
+                'maintenance_type' => $maintenanceType,
+                'maintenance_remarks' => $remarks,
+            ])
+        );
 
         return redirect()
             ->route('admin.devices.show', $device->id)
@@ -378,14 +668,24 @@ class DeviceController extends Controller
         }
 
         if ($isComputerType) {
-            $data['specs'] = collect($data['specs'] ?? [])
-                ->filter(fn($value) => filled($value))
-                ->toArray();
 
-            if (empty($data['specs'])) {
-                $data['specs'] = null;
-            }
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Laptops do not use Form Factor.
+    |--------------------------------------------------------------------------
+    */
+    if ($typeName === 'laptop') {
+        unset($data['specs']['form_factor']);
+    }
+
+    $data['specs'] = collect($data['specs'] ?? [])
+        ->filter(fn($value) => filled($value))
+        ->toArray();
+
+    if (empty($data['specs'])) {
+        $data['specs'] = null;
+    }
+}
 
         return $data;
     }
@@ -394,6 +694,16 @@ class DeviceController extends Controller
      * Only show these device types in the Add/Edit dropdown.
      * This does not delete old device types from the database.
      */
+
+    private function isComputerDevice(?string $deviceType): bool
+    {
+        return in_array(
+            strtolower((string) $deviceType),
+            ['desktop', 'laptop'],
+            true
+        );
+    }
+
     private function allowedDeviceTypes()
     {
         $allowedTypes = [
