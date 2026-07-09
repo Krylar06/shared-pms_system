@@ -481,7 +481,7 @@
                                 </a>
 
                                 <a
-                                    href="{{ url('/admin/change-password') }}"
+                                    href="{{ route('admin.change-password') }}"
                                     class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
                                 >
                                     Change Password
