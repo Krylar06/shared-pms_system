@@ -13,10 +13,40 @@ class OfficeController extends Controller
 {
     private const NAME_REGEX = '/^[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&\'\-\(\)\s]*$/u';
 
+    private function buildSummary(Office $office): array
+    {
+        $office->loadMissing('location');
+
+        return [
+            'office' => $office->name,
+            'location' => optional($office->location)->name,
+        ];
+    }
+
+    private function buildCreateSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
+    private function buildUpdateSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
+    private function buildDeleteSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
     public function index(Location $location)
     {
         $offices = Office::where('location_id', $location->id)->orderBy('name')->paginate(15);
-        return view('admin.offices.index', ['location' => $location, 'college' => $location, 'offices' => $offices]);
+
+        return view('admin.offices.index', [
+            'location' => $location,
+            'college' => $location, // backward-compatible variable for existing views
+            'offices' => $offices,
+        ]);
     }
 
     public function store(Request $request, Location $location)
@@ -65,14 +95,29 @@ class OfficeController extends Controller
                 'names.*' => 'office name',
             ]);
 
+            $items = [];
+
             foreach (range(0, $count - 1) as $i) {
                 $office = Office::create([
                     'location_id' => $location->id,
                     'name' => $data['names'][$i],
                 ]);
 
-                ActivityLog::record('created', "Created office \"{$office->name}\" in \"{$location->name}\" (bulk add)", $office);
+                $items[] = [
+                    'summary' => $this->buildCreateSummary($office),
+                ];
             }
+
+            ActivityLog::record(
+                'created',
+                "Created {$count} office(s) in \"{$location->name}\" (Bulk Add)",
+                null,
+                ActivityLog::makePayload([
+                    'bulk' => true,
+                    'record_type' => 'Office',
+                    'items' => $items,
+                ])
+            );
 
             return back()->with('success', 'Offices created.');
         }
@@ -96,7 +141,14 @@ class OfficeController extends Controller
             'name' => $data['name'],
         ]);
 
-        ActivityLog::record('created', "Created office \"{$office->name}\" in \"{$location->name}\"", $office);
+        ActivityLog::record(
+            'created',
+            "Created office \"{$office->name}\" in \"{$location->name}\"",
+            $office,
+            ActivityLog::makePayload(
+                $this->buildCreateSummary($office)
+            )
+        );
 
         return back()->with('success', 'Office created.');
     }
@@ -104,7 +156,12 @@ class OfficeController extends Controller
     public function edit(Location $location, Office $office)
     {
         abort_unless($office->location_id === $location->id, 404);
-        return view('admin.offices.edit', ['location' => $location, 'college' => $location, 'office' => $office]);
+
+        return view('admin.offices.edit', [
+            'location' => $location,
+            'college' => $location, // backward-compatible variable for existing views
+            'office' => $office,
+        ]);
     }
 
     public function update(Request $request, Location $location, Office $office)
@@ -124,9 +181,29 @@ class OfficeController extends Controller
             'name.unique' => 'This office name already exists in this location.',
         ]);
 
-        $office->update($data);
+        $before = [
+            'office' => $office->name,
+            'location' => $location->name,
+        ];
 
-        ActivityLog::record('updated', "Updated office \"{$office->name}\" in \"{$location->name}\"", $office);
+        $office->update($data);
+        $office->refresh();
+
+        ActivityLog::record(
+            'updated',
+            "Updated office \"{$office->name}\" in \"{$location->name}\"",
+            $office,
+            ActivityLog::makePayload(
+                $this->buildUpdateSummary($office),
+                ActivityLog::buildChanges(
+                    $before,
+                    [
+                        'office' => $office->name,
+                        'location' => $location->name,
+                    ]
+                )
+            )
+        );
 
         return redirect()->route('admin.offices.index', $location)->with('success', 'Office updated.');
     }
@@ -134,10 +211,18 @@ class OfficeController extends Controller
     public function destroy(Location $location, Office $office)
     {
         abort_unless($office->location_id === $location->id, 404);
-        $name = $office->name;
-        $office->delete();
 
-        ActivityLog::record('deleted', "Deleted office \"{$name}\" from \"{$location->name}\"");
+        $name = $office->name;
+        $summary = $this->buildDeleteSummary($office);
+
+        ActivityLog::record(
+            'deleted',
+            "Deleted office \"{$name}\" from \"{$location->name}\"",
+            $office,
+            ActivityLog::makePayload($summary)
+        );
+
+        $office->delete();
 
         return back()->with('success', 'Office deleted.');
     }

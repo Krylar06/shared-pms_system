@@ -168,7 +168,7 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-900 antialiased dark:bg-gray-900 dark:text-gray-100">
+<body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden dark:bg-gray-900 dark:text-gray-100">
 <div
     x-data="{
         sidebarOpen: false,

@@ -210,7 +210,7 @@ document.addEventListener('alpine:init', () => {
             @csrf
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Full Name</label>
+                <label class="text-sm font-medium dark:text-gray-300">Full Name <span class="text-red-600 dark:text-red-400">*</span></label>
                 <input
                     name="name"
                     x-model="addSingle.name"
@@ -225,7 +225,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Email</label>
+                <label class="text-sm font-medium dark:text-gray-300">Email <span class="text-red-600 dark:text-red-400">*</span></label>
                 <input
                     name="email"
                     type="email"
@@ -241,7 +241,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Role</label>
+                <label class="text-sm font-medium dark:text-gray-300">Role <span class="text-red-600 dark:text-red-400">*</span></label>
                 <select
                     name="role"
                     x-model="addSingle.role"
@@ -256,7 +256,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Password</label>
+                <label class="text-sm font-medium dark:text-gray-300">Password <span class="text-red-600 dark:text-red-400">*</span></label>
                 <input
                     name="password"
                     type="password"
@@ -269,7 +269,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Confirm Password</label>
+                <label class="text-sm font-medium dark:text-gray-300">Confirm Password <span class="text-red-600 dark:text-red-400">*</span></label>
                 <input
                     name="password_confirmation"
                     type="password"
@@ -300,7 +300,7 @@ document.addEventListener('alpine:init', () => {
             <input type="hidden" name="editing_id" :value="editUser.id">
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Full Name</label>
+                <label class="text-sm font-medium dark:text-gray-300">Full Name <span class="text-red-600 dark:text-red-400">*</span></label>
                 <input
                     name="name"
                     x-model="editUser.name"
@@ -314,7 +314,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Email</label>
+                <label class="text-sm font-medium dark:text-gray-300">Email <span class="text-red-600 dark:text-red-400">*</span></label>
                 <input
                     name="email"
                     type="email"
@@ -329,7 +329,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Role</label>
+                <label class="text-sm font-medium dark:text-gray-300">Role <span class="text-red-600 dark:text-red-400">*</span></label>
                 <select
                     name="role"
                     x-model="editUser.role"
