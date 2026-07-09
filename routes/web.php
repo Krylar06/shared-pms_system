@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Admin\CollegeController;
+use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\OfficeController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StaffDeviceController;
@@ -65,8 +65,8 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
 | Protected Routes — shared by both roles (admin + custodian)
 |--------------------------------------------------------------------------
 | Devices, issuing/returning devices, reports, dashboard, scanner, and
-| browsing the college/office/staff directory are everyday tasks for both
-| roles. Org-structure changes (creating/editing/deleting colleges,
+| browsing the location/office/staff directory are everyday tasks for both
+| roles. Org-structure changes (creating/editing/deleting locations,
 | offices, staff) and user management are admin-only — see the nested
 | 'role:admin' group further below.
 */
@@ -161,18 +161,22 @@ Route::middleware(['auth', 'role:admin,custodian'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Colleges — browsing is open to both roles
+    | Locations — browsing is open to both roles
     |--------------------------------------------------------------------------
     */
-    Route::get('colleges', [CollegeController::class, 'index'])->name('admin.colleges.index');
+    Route::get('locations', [LocationController::class, 'index'])->name('admin.locations.index');
+    // Backward-compatible old URL/name.
+    Route::get('colleges', fn () => redirect()->route('admin.locations.index'))->name('admin.colleges.index');
 
     /*
     |--------------------------------------------------------------------------
     | Offices — browsing is open to both roles
     |--------------------------------------------------------------------------
     */
-    Route::get('colleges/{college}/offices', [OfficeController::class, 'index'])
+    Route::get('locations/{location}/offices', [OfficeController::class, 'index'])
         ->name('admin.offices.index');
+    // Backward-compatible old URL.
+    Route::get('colleges/{location}/offices', [OfficeController::class, 'index']);
 
     /*
     |--------------------------------------------------------------------------
@@ -208,27 +212,39 @@ Route::middleware(['auth', 'role:admin,custodian'])->group(function () {
     |--------------------------------------------------------------------------
     | Admin-only — org structure changes & user management
     |--------------------------------------------------------------------------
-    | Creating/editing/deleting colleges, offices, and staff records changes
+    | Creating/editing/deleting locations, offices, and staff records changes
     | the university's organizational structure, which is an admin decision.
     | Custodians can browse this directory (routes above) but not modify it.
     */
     Route::middleware('role:admin')->group(function () {
 
-        // Colleges — write actions
-        Route::post('colleges', [CollegeController::class, 'store'])->name('admin.colleges.store');
-        Route::get('colleges/{college}/edit', [CollegeController::class, 'edit'])->name('admin.colleges.edit');
-        Route::put('colleges/{college}', [CollegeController::class, 'update'])->name('admin.colleges.update');
-        Route::delete('colleges/{college}', [CollegeController::class, 'destroy'])->name('admin.colleges.destroy');
+        // Locations — write actions
+        Route::post('locations', [LocationController::class, 'store'])->name('admin.locations.store');
+        Route::get('locations/{location}/edit', [LocationController::class, 'edit'])->name('admin.locations.edit');
+        Route::put('locations/{location}', [LocationController::class, 'update'])->name('admin.locations.update');
+        Route::delete('locations/{location}', [LocationController::class, 'destroy'])->name('admin.locations.destroy');
+
+        // Backward-compatible old route names/URLs.
+        Route::post('colleges', [LocationController::class, 'store'])->name('admin.colleges.store');
+        Route::get('colleges/{location}/edit', [LocationController::class, 'edit'])->name('admin.colleges.edit');
+        Route::put('colleges/{location}', [LocationController::class, 'update'])->name('admin.colleges.update');
+        Route::delete('colleges/{location}', [LocationController::class, 'destroy'])->name('admin.colleges.destroy');
 
         // Offices — write actions
-        Route::post('colleges/{college}/offices', [OfficeController::class, 'store'])
+        Route::post('locations/{location}/offices', [OfficeController::class, 'store'])
             ->name('admin.offices.store');
-        Route::get('colleges/{college}/offices/{office}/edit', [OfficeController::class, 'edit'])
+        Route::get('locations/{location}/offices/{office}/edit', [OfficeController::class, 'edit'])
             ->name('admin.offices.edit');
-        Route::put('colleges/{college}/offices/{office}', [OfficeController::class, 'update'])
+        Route::put('locations/{location}/offices/{office}', [OfficeController::class, 'update'])
             ->name('admin.offices.update');
-        Route::delete('colleges/{college}/offices/{office}', [OfficeController::class, 'destroy'])
+        Route::delete('locations/{location}/offices/{office}', [OfficeController::class, 'destroy'])
             ->name('admin.offices.destroy');
+
+        // Backward-compatible old office URLs.
+        Route::post('colleges/{location}/offices', [OfficeController::class, 'store']);
+        Route::get('colleges/{location}/offices/{office}/edit', [OfficeController::class, 'edit']);
+        Route::put('colleges/{location}/offices/{office}', [OfficeController::class, 'update']);
+        Route::delete('colleges/{location}/offices/{office}', [OfficeController::class, 'destroy']);
 
         // Staff — write actions
         Route::post('offices/{office}/staff', [StaffController::class, 'store'])

@@ -9,7 +9,7 @@ use App\Http\Requests\StoreDeviceRequest;
 use App\Http\Requests\UpdateDeviceRequest;
 use App\Models\Device;
 use App\Models\DeviceMaintenanceRecord;
-use App\Models\College;
+use App\Models\Location;
 use App\Models\DeviceType;
 use App\Models\Office;
 use Illuminate\Http\Request;
@@ -23,7 +23,8 @@ class DeviceController extends Controller
     {
         $q = $request->string('q')->toString();
         $typeId = $request->integer('type');
-        $collegeId = $request->integer('college');
+        $locationId = $request->integer('location') ?: $request->integer('college');
+        $collegeId = $locationId; // backward-compatible variable for existing views
         $condition = $request->query('condition');
 
         if (!in_array($condition, ['serviceable', 'unserviceable'], true)) {
@@ -33,7 +34,7 @@ class DeviceController extends Controller
         $devices = Device::query()
             ->with([
                 'type',
-                'currentAssignment.staff.office.college',
+                'currentAssignment.staff.office.location',
                 'latestMaintenanceRecord',
             ])
             ->when($q, function ($query) use ($q) {
@@ -48,9 +49,9 @@ class DeviceController extends Controller
             ->when($typeId, function ($query) use ($typeId) {
                 return $query->where('device_type_id', $typeId);
             })
-            ->when($collegeId, function ($query) use ($collegeId) {
-                return $query->whereHas('currentAssignment.staff.office', function ($office) use ($collegeId) {
-                    $office->where('college_id', $collegeId);
+            ->when($locationId, function ($query) use ($locationId) {
+                return $query->whereHas('currentAssignment.staff.office', function ($office) use ($locationId) {
+                    $office->where('location_id', $locationId);
                 });
             })
             ->when($condition, function ($query) use ($condition) {
@@ -61,15 +62,19 @@ class DeviceController extends Controller
             ->withQueryString();
 
         $types = $this->allowedDeviceTypes();
-        $colleges = College::orderBy('name')->get();
+        $locations = Location::orderBy('name')->get();
+
+        $colleges = $locations; // backward-compatible variable for existing device views
 
         return view('admin.devices.index', compact(
             'devices',
             'q',
             'typeId',
+            'locationId',
             'collegeId',
             'condition',
             'types',
+            'locations',
             'colleges'
         ));
     }
@@ -119,7 +124,7 @@ class DeviceController extends Controller
     {
         $device->load([
             'type',
-            'currentAssignment.staff.office.college',
+            'currentAssignment.staff.office.location',
             'latestMaintenanceRecord',
         ]);
 
