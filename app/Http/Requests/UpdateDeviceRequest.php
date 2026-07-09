@@ -31,6 +31,8 @@ class UpdateDeviceRequest extends FormRequest
                 'regex:' . StoreDeviceRequest::SERIAL_NUMBER_REGEX,
             ],
 
+            'computer_name' => ['nullable', 'string', 'max:100'],
+
             'brand'       => ['nullable', 'string', 'max:100', 'regex:' . StoreDeviceRequest::BRAND_MODEL_REGEX],
             'model'       => ['nullable', 'string', 'max:100', 'regex:' . StoreDeviceRequest::BRAND_MODEL_REGEX],
             'mac_address' => ['nullable', 'string', 'regex:' . StoreDeviceRequest::MAC_ADDRESS_REGEX],
