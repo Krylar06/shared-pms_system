@@ -30,10 +30,12 @@ class User extends Authenticatable
     */
     public const ROLE_ADMIN = 'admin';
     public const ROLE_CUSTODIAN = 'custodian';
+    public const ROLE_UNIT_HEAD = 'unit_head';
 
     public const ROLES = [
         self::ROLE_ADMIN => 'Admin',
         self::ROLE_CUSTODIAN => 'Custodian',
+        self::ROLE_UNIT_HEAD => 'Unit Head',
     ];
 
     /**
@@ -79,6 +81,11 @@ class User extends Authenticatable
     public function isCustodian(): bool
     {
         return $this->role === self::ROLE_CUSTODIAN;
+    }
+
+    public function isUnitHead(): bool
+    {
+        return $this->role === self::ROLE_UNIT_HEAD;
     }
 
     public function roleLabel(): string

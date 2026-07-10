@@ -120,9 +120,12 @@ class ReportController extends Controller
 
         abort_if(! $record->device, 404);
 
+        $unitHead = User::where('role', User::ROLE_UNIT_HEAD)->first();
+
         $pdf = Pdf::loadView('admin.reports.checked-equipment-pdf', [
             'record' => $record,
             'device' => $record->device,
+            'unitHead' => $unitHead,
             'checklistItems' => $this->checklistItems(),
             'softwareItems' => $this->softwareItems(),
         ])->setPaper([0, 0, 612, 936], 'landscape');
@@ -157,8 +160,11 @@ class ReportController extends Controller
 
         abort_if($records->isEmpty(), 404);
 
+        $unitHead = User::where('role', User::ROLE_UNIT_HEAD)->first();
+
         $pdf = Pdf::loadView('admin.reports.checked-equipment-pdf', [
             'records' => $records,
+            'unitHead' => $unitHead,
             'checklistItems' => $this->checklistItems(),
             'softwareItems' => $this->softwareItems(),
         ])->setPaper([0, 0, 612, 936], 'landscape');

@@ -540,7 +540,9 @@
             <td style="width: 50%; text-align: right;">
                 <div class="approved-signature-block">
                     <span class="sig-label">Approved by:</span>
-                    <span class="sig-name-line"></span>
+                    <span class="sig-name-line">
+                        {{ $unitHead?->name ?? '' }}
+                    </span>
                     <br>
                     <span class="sig-label">Date:</span>
                     <span class="sig-date-line"></span>

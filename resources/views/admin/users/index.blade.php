@@ -248,8 +248,22 @@ document.addEventListener('alpine:init', () => {
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     required
                 >
+                    @php
+                        $hasUnitHead = \App\Models\User::where('role', 'unit_head')->exists();
+                    @endphp
+
                     @foreach($roles as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                        <option
+                            value="{{ $value }}"
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                disabled
+                            @endif
+                        >
+                            {{ $label }}
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                (Already Assigned)
+                            @endif
+                        </option>
                     @endforeach
                 </select>
                 <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="addSingle.roleError" x-text="addSingle.roleError"></div>
@@ -336,8 +350,23 @@ document.addEventListener('alpine:init', () => {
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     required
                 >
+                    @php
+                        $hasUnitHead = \App\Models\User::where('role', 'unit_head')->exists();
+                    @endphp
+
                     @foreach($roles as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                        <option
+                            value="{{ $value }}"
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                disabled
+                            @endif
+                        >
+                            {{ $label }}
+
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                (Already Assigned)
+                            @endif
+                        </option>
                     @endforeach
                 </select>
                 <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editUser.roleError" x-text="editUser.roleError"></div>
