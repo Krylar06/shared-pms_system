@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Device Manager')
-@section('page_title', 'Device Manager')
+@section('title', 'Equipment Manager')
+@section('page_title', 'Equipment Manager')
 @section('breadcrumbs')
     <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
     <span>/</span>

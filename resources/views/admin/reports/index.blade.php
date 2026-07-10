@@ -20,11 +20,11 @@
         </h1>
 
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Generate inventory, account, checked-equipment, and printable checklist reports.
+            Generate inventory, account, and checklist equipment reports.
         </p>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 
         {{-- Assets --}}
         <a href="{{ route('admin.reports.assets') }}"
@@ -35,11 +35,11 @@
             </div>
 
             <h2 class="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
-                Assets by Type / Office / College
+                Assets by Type / Office / Location
             </h2>
 
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Filter all equipment by device type, college, office, or keyword.
+                Filter all equipment by device type, location, office, or keyword.
             </p>
         </a>
 
@@ -62,39 +62,24 @@
             </a>
         @endif
 
-        {{-- Checked Equipment --}}
+        {{-- Checklist Equipment --}}
         <a href="{{ route('admin.reports.checkedEquipment') }}"
            class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-emerald-500">
 
             <div class="text-sm font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-                Checked Equipment
+                Checklist Equipment
             </div>
 
             <h2 class="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
-                Marked Checked by Admin
+                Checklist Equipment by Admin
             </h2>
 
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                See equipment marked checked, grouped by admin account and date.
+                See equipment with completed checklists, grouped by admin account and date.
             </p>
         </a>
 
         {{-- Checklist --}}
-        <a href="{{ route('admin.reports.checklist') }}"
-           class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-orange-500">
-
-            <div class="text-sm font-semibold uppercase tracking-wide text-orange-600 dark:text-orange-400">
-                Checklist
-            </div>
-
-            <h2 class="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
-                Printable Add-On Checklist Form
-            </h2>
-
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Generate a printable checklist based on filtered devices.
-            </p>
-        </a>
 
     </div>
 

@@ -4,7 +4,7 @@
 @section('page_title', 'Edit Device')
 
 @section('breadcrumb')
-    <a class="text-blue-700 hover:underline" href="{{ route('admin.devices.index') }}">Device Manager</a>
+    <a class="text-blue-700 hover:underline" href="{{ route('admin.devices.index') }}">Equipment Manager</a>
     <span class="mx-2">/</span>
     <span>Edit Device</span>
 @endsection

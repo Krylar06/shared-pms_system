@@ -464,7 +464,7 @@
                                 </a>
 
                                 <a href="{{ route('admin.devices.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
-                                    Device Manager
+                                    Equipment Manager
                                 </a>
 
                                 <a href="{{ route('admin.reports.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
