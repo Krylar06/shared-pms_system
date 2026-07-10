@@ -14,9 +14,9 @@ class StaffDeviceController extends Controller
 {
     public function index(Staff $staff)
     {
-        $staff->load('office.college');
+        $staff->load('office.location');
 
-        $issued = DeviceAssignment::query()
+        $assignments = DeviceAssignment::query()
             ->where('staff_id', $staff->id)
             ->whereNull('returned_at')
             ->with([
@@ -41,13 +41,14 @@ class StaffDeviceController extends Controller
             ->orderBy('property_number')
             ->get();
 
-        return view('admin.staff.devices', compact('staff', 'issued', 'availableDevices'));
+        return view('admin.staff.devices', compact('staff', 'assignments', 'availableDevices'));
     }
 
     public function issue(Request $request, Staff $staff)
     {
         $data = $request->validate([
             'device_id' => ['required', 'exists:devices,id'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
 
         /*
@@ -76,6 +77,7 @@ class StaffDeviceController extends Controller
             'staff_id' => $staff->id,
             'issued_by' => Auth::id(),
             'issued_at' => now(),
+            'remarks' => $data['remarks'] ?? null,
         ]);
 
         $device->update([
