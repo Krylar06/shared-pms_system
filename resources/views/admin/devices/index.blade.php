@@ -10,136 +10,175 @@
 
 @section('content')
 
-    <div x-data="{
-                                addOpen: false,
-                                editOpen: false,
-                                deleteOpen: false,
+<div
+    x-data="{
+        addOpen: false,
+        editOpen: false,
+        deleteOpen: false,
 
-                                addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
-                                addComputerName: @js(old('computer_name', old('specs.computer_name', ''))),
+        addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
+        addComputerName: @js(old('computer_name', old('specs.computer_name', ''))),
 
-                                typeNames: @js($types->pluck('name', 'id')),
+        typeNames: @js($types->pluck('name', 'id')),
 
-                                editDevice: {
-                                    id: null,
-                                    device_type_id: '',
-                                    property_number: '',
-                                    serial_number: '',
-                                    computer_name: '',
-                                    brand: '',
-                                    model: '',
-                                    mac_address: '',
-                                    unit_price: '',
-                                    date_acquired: '',
-                                    last_maintenance_date: '',
-                                    maintenance_remarks: '',
-                                    notes: '',
-                                    status: 'available',
-                                    condition: 'serviceable',
-                                    specs: {
-                                        computer_name: '',
-                                        os: '',
-                                        memory: '',
-                                        storage: '',
-                                        form_factor: ''
-                                    }
-                                },
+        editDevice: {
+            id: null,
+            device_type_id: '',
+            property_number: '',
+            serial_number: '',
+            computer_name: '',
+            brand: '',
+            model: '',
+            mac_address: '',
+            unit_price: '',
+            date_acquired: '',
+            last_maintenance_date: '',
+            maintenance_remarks: '',
+            notes: '',
+            status: 'available',
+            condition: 'serviceable',
+            specs: {
+                computer_name: '',
+                os: '',
+                memory: '',
+                storage: '',
+                form_factor: ''
+            }
+        },
 
-                                deleteDeviceId: null,
+        deleteDeviceId: null,
 
-                                getTypeName(typeId) {
-                                    return (this.typeNames[typeId] || '').toLowerCase();
-                                },
+        getTypeName(typeId) {
+            return (this.typeNames[typeId] || '').toLowerCase();
+        },
 
-                                isComputerType(typeId) {
-                                    let name = this.getTypeName(typeId);
-                                    return name === 'desktop' || name === 'laptop';
-                                },
+        isComputerType(typeId) {
+            let name = this.getTypeName(typeId);
+            return name === 'desktop' || name === 'laptop';
+        },
 
-                                openEdit(device) {
-                                    device.specs = device.specs ?? {};
-                                    device.specs.computer_name = device.specs.computer_name ?? '';
-                                    device.computer_name = device.computer_name ?? device.specs.computer_name ?? '';
-                                    device.specs.os = device.specs.os ?? '';
-                                    device.specs.memory = device.specs.memory ?? '';
-                                    device.specs.storage = device.specs.storage ?? '';
-                                    device.specs.form_factor = device.specs.form_factor ?? '';
-                                    device.serial_number = device.serial_number ?? '';
-                                    device.status = device.status ?? 'available';
-                                    device.condition = device.condition ?? 'serviceable';
+        isDesktopType(typeId) {
+            return this.getTypeName(typeId) === 'desktop';
+        },
 
-                                    this.editDevice = device;
-                                    this.editOpen = true;
-                                },
+        formatUnitPriceValue(value) {
+            value = String(value ?? '').replace(/[^0-9.]/g, '');
 
-                                openDelete(id) {
-                                    this.deleteDeviceId = id;
-                                    this.deleteOpen = true;
-                                    this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
-                                }
-                            }" class="space-y-5">
-        <div class="flex items-start justify-between gap-3">
-            <div>
-                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    Equipment Manager
-                </h1>
-            </div>
+            let parts = value.split('.');
+            let whole = parts.shift() || '';
+            let decimals = parts.length ? '.' + parts.join('').slice(0, 2) : '';
 
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('admin.devices.qr.index') }}"
-                    class="shrink-0 inline-flex items-center rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600">
-                    Generate QR
-                </a>
+            whole = whole.replace(/^0+(?=\d)/, '');
+            whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-                <a href="{{ route('admin.reports.preventiveMaintenance.export') }}"
-                    class="shrink-0 inline-flex items-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600">
-                    Export Excel Report
-                </a>
+            return whole + decimals;
+        },
 
-                <button type="button"
-                    class="shrink-0 inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-                    x-on:click="addOpen = true">
-                    + Add Device
-                </button>
-            </div>
+        formatUnitPriceInput(event) {
+            event.target.value = this.formatUnitPriceValue(event.target.value);
+        },
+
+        cleanUnitPrices(form) {
+            form.querySelectorAll('.unit-price-input').forEach((input) => {
+                input.value = String(input.value ?? '').replace(/,/g, '');
+            });
+        },
+
+        openEdit(device) {
+            device.specs = device.specs ?? {};
+            device.specs.computer_name = device.specs.computer_name ?? '';
+            device.computer_name = device.computer_name ?? device.specs.computer_name ?? '';
+            device.specs.os = device.specs.os ?? '';
+            device.specs.memory = device.specs.memory ?? '';
+            device.specs.storage = device.specs.storage ?? '';
+            device.specs.form_factor = device.specs.form_factor ?? '';
+            device.serial_number = device.serial_number ?? '';
+            device.status = device.status ?? 'available';
+            device.condition = device.condition ?? 'serviceable';
+
+            this.editDevice = device;
+            this.editDevice.unit_price = this.formatUnitPriceValue(this.editDevice.unit_price);
+            this.editOpen = true;
+        },
+
+        openDelete(id) {
+            this.deleteDeviceId = id;
+            this.deleteOpen = true;
+            this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
+        }
+    }"
+    class="space-y-5"
+>
+    <div class="flex items-start justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+                Equipment Manager
+            </h1>
         </div>
 
-        @if($errors->any())
-            <div class="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                <div class="font-semibold">Please check the form.</div>
-                <ul class="mt-1 list-inside list-disc">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
+        <div class="flex flex-wrap gap-2">
+            <a
+                href="{{ route('admin.devices.qr.index') }}"
+                class="shrink-0 inline-flex items-center rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+            >
+                Generate QR
+            </a>
+
+            <a
+                href="{{ route('admin.reports.preventiveMaintenance.export') }}"
+                class="shrink-0 inline-flex items-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600"
+            >
+                Export Excel Report
+            </a>
+
+            <button
+                type="button"
+                class="shrink-0 inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                x-on:click="addOpen = true"
+            >
+                + Add Device
+            </button>
+        </div>
+    </div>
+
+    @if($errors->any())
+        <div class="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
+            <div class="font-semibold">Please check the form.</div>
+            <ul class="mt-1 list-inside list-disc">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- Filters --}}
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <form method="GET" class="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div class="w-full lg:w-44">
+                <select
+                    name="type"
+                    onchange="this.form.submit()"
+                    class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/40"
+                >
+                    <option value="" {{ empty($typeId) ? 'selected' : '' }}>Device Type</option>
+
+                    @foreach($types as $type)
+                        <option value="{{ $type->id }}" @selected($typeId == $type->id)>
+                            {{ $type->name }}
+                        </option>
                     @endforeach
-                </ul>
+                </select>
             </div>
-        @endif
 
-        {{-- Filters --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <form method="GET" class="flex flex-col gap-3 lg:flex-row lg:items-center">
-
+            @if(isset($colleges))
                 <div class="w-full lg:w-44">
-                    <select name="type" onchange="this.form.submit()"
-                        class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/40">
-                        <option value="" {{ empty($typeId) ? 'selected' : '' }}>
-                            Device Type
-                        </option>
-
-                        @foreach($types as $type)
-                            <option value="{{ $type->id }}" @selected($typeId == $type->id)>
-                                {{ $type->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="w-full lg:w-44">
-                    <select name="college" onchange="this.form.submit()"
-                        class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/40">
-                        <option value="" {{ empty($collegeId) ? 'selected' : '' }}>
-                            College
-                        </option>
+                    <select
+                        name="college"
+                        onchange="this.form.submit()"
+                        class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/40"
+                    >
+                        <option value="" {{ empty($collegeId) ? 'selected' : '' }}>College</option>
 
                         @foreach($colleges as $college)
                             <option value="{{ $college->id }}" @selected($collegeId == $college->id)>
@@ -148,261 +187,283 @@
                         @endforeach
                     </select>
                 </div>
+            @endif
 
-                <div class="w-full lg:w-44">
-                    <select name="condition" onchange="this.form.submit()"
-                        class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/40">
-                        <option value="" {{ empty($condition) ? 'selected' : '' }}>
-                            Condition
-                        </option>
+            <div class="w-full lg:w-44">
+                <select
+                    name="condition"
+                    onchange="this.form.submit()"
+                    class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/40"
+                >
+                    <option value="" {{ empty($condition) ? 'selected' : '' }}>Condition</option>
+                    <option value="serviceable" @selected(($condition ?? '') === 'serviceable')>Serviceable</option>
+                    <option value="unserviceable" @selected(($condition ?? '') === 'unserviceable')>Unserviceable</option>
+                </select>
+            </div>
 
-                        <option value="serviceable" @selected($condition == 'serviceable')>
-                            Serviceable
-                        </option>
+            <input
+                name="q"
+                value="{{ $q }}"
+                placeholder="Search property #, serial #..."
+                class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-900/40"
+            >
 
-                        <option value="unserviceable" @selected($condition == 'unserviceable')>
-                            Unserviceable
-                        </option>
-                    </select>
-                </div>
+            <div class="flex gap-2">
+                <button
+                    type="submit"
+                    class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                    Search
+                </button>
 
-                <input name="q" value="{{ $q }}" placeholder="Search property #, serial #..."
-                    class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-900/40">
+                <a
+                    href="{{ route('admin.devices.index') }}"
+                    class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
 
-                <div>
-                    <a href="{{ route('admin.devices.index') }}"
-                        class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
-                        Reset
-                    </a>
-                </div>
+    {{-- Mobile cards --}}
+    <div class="grid grid-cols-1 gap-3 md:hidden">
+        @forelse($devices as $d)
+            @php
+                $deviceTypeName = strtolower($d->type?->name ?? '');
+                $isComputer = in_array($deviceTypeName, ['desktop', 'laptop']);
+            @endphp
 
-            </form>
-        </div>
+            <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Type</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">
+                            {{ $d->type?->name ?? '-' }}
+                        </div>
+                    </div>
 
-        {{-- Mobile cards --}}
-        <div class="grid grid-cols-1 gap-3 md:hidden">
-            @forelse($devices as $d)
-                @php
-                    $deviceTypeName = strtolower($d->type?->name ?? '');
-                    $isComputer = in_array($deviceTypeName, ['desktop', 'laptop']);
-                @endphp
-
-                <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Type</div>
-                            <div class="font-semibold text-gray-900 dark:text-white">
-                                {{ $d->type?->name ?? '-' }}
+                            <div class="text-gray-500 dark:text-gray-400">Property #</div>
+                            <div class="text-gray-900 dark:text-white">{{ $d->property_number }}</div>
+                        </div>
+
+                        <div>
+                            <div class="text-gray-500 dark:text-gray-400">Serial #</div>
+                            <div class="text-gray-900 dark:text-white">{{ $d->serial_number ?: '-' }}</div>
+                        </div>
+
+                        <div>
+                            <div class="text-gray-500 dark:text-gray-400">Acquired</div>
+                            <div class="text-gray-900 dark:text-white">
+                                {{ $d->date_acquired ? $d->date_acquired->format('M d, Y') : '-' }}
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <div class="text-gray-500 dark:text-gray-400">Property #</div>
-                                <div class="text-gray-900 dark:text-white">{{ $d->property_number }}</div>
-                            </div>
-
-                            <div>
-                                <div class="text-gray-500 dark:text-gray-400">Serial #</div>
-                                <div class="text-gray-900 dark:text-white">{{ $d->serial_number ?: '-' }}</div>
-                            </div>
-
-                            <div>
-                                <div class="text-gray-500 dark:text-gray-400">Acquired</div>
-                                <div class="text-gray-900 dark:text-white">
-                                    {{ $d->date_acquired ? $d->date_acquired->format('M d, Y') : '-' }}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="text-gray-500 dark:text-gray-400">Condition</div>
-                                <div class="text-gray-900 capitalize dark:text-white">
-                                    {{ $d->condition ?? 'serviceable' }}
-                                </div>
-                            </div>
-
-                            @if($isComputer)
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400">MAC Address</div>
-                                    <div class="text-gray-900 dark:text-white">
-                                        {{ $d->mac_address ?: '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400">Operating System</div>
-                                    <div class="text-gray-900 dark:text-white">
-                                        {{ data_get($d->specs, 'os', '-') ?: '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400">Memory</div>
-                                    <div class="text-gray-900 dark:text-white">
-                                        {{ data_get($d->specs, 'memory', '-') ?: '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400">Storage</div>
-                                    <div class="text-gray-900 dark:text-white">
-                                        {{ data_get($d->specs, 'storage', '-') ?: '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400">Form Factor</div>
-                                    <div class="text-gray-900 dark:text-white">
-                                        {{ data_get($d->specs, 'form_factor', '-') ?: '-' }}
-                                    </div>
-                                </div>
-                            @endif
-
-                            <div>
-                                <div class="text-gray-500 dark:text-gray-400">Last Maintenance</div>
-                                <div class="text-gray-900 dark:text-white">
-                                    {{ $d->last_maintenance_date ? $d->last_maintenance_date->format('M d, Y') : 'Not yet checked' }}
-                                </div>
+                        <div>
+                            <div class="text-gray-500 dark:text-gray-400">Condition</div>
+                            <div class="text-gray-900 capitalize dark:text-white">
+                                {{ $d->condition ?? 'serviceable' }}
                             </div>
                         </div>
 
-                        @if($d->maintenance_remarks)
-                            <div class="text-sm">
-                                <div class="text-gray-500 dark:text-gray-400">Maintenance Remarks</div>
-                                <div class="text-gray-900 dark:text-white">{{ $d->maintenance_remarks }}</div>
+                        @if($isComputer)
+                            <div>
+                                <div class="text-gray-500 dark:text-gray-400">MAC Address</div>
+                                <div class="text-gray-900 dark:text-white">
+                                    {{ $d->mac_address ?: '-' }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-gray-500 dark:text-gray-400">Operating System</div>
+                                <div class="text-gray-900 dark:text-white">
+                                    {{ data_get($d->specs, 'os', '-') ?: '-' }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-gray-500 dark:text-gray-400">Memory</div>
+                                <div class="text-gray-900 dark:text-white">
+                                    {{ data_get($d->specs, 'memory', '-') ?: '-' }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-gray-500 dark:text-gray-400">Storage</div>
+                                <div class="text-gray-900 dark:text-white">
+                                    {{ data_get($d->specs, 'storage', '-') ?: '-' }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-gray-500 dark:text-gray-400">Form Factor</div>
+                                <div class="text-gray-900 dark:text-white">
+                                    {{ data_get($d->specs, 'form_factor', '-') ?: '-' }}
+                                </div>
                             </div>
                         @endif
 
-                        <div class="flex flex-wrap gap-2 pt-1">
-                            <a href="{{ route('admin.devices.show', $d) }}"
-                                class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600">
-                                View
-                            </a>
-
-                            <a href="{{ route('admin.devices.history', $d) }}"
-                                class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600">
-                                History
-                            </a>
-
-                            <a href="{{ route('admin.devices.checklist.form', $d) }}"
-                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-                                Mark Checked
-                            </a>
-
-                            <button type="button"
-                                class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500"
-                                x-on:click="openEdit({
-                                                                                id: {{ $d->id }},
-                                                                                device_type_id: '{{ $d->device_type_id }}',
-                                                                                computer_name: @js($d->computer_name ?? data_get($d->specs, 'computer_name', '')),
-                                                                                property_number: @js($d->property_number),
-                                                                                serial_number: @js($d->serial_number ?? ''),
-                                                                                brand: @js($d->brand ?? ''),
-                                                                                model: @js($d->model ?? ''),
-                                                                                mac_address: @js($d->mac_address ?? ''),
-                                                                                unit_price: @js($d->unit_price ?? ''),
-                                                                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                status: @js($d->status ?? 'available'),
-                                                                                condition: @js($d->condition ?? 'serviceable'),
-                                                                                notes: @js($d->notes ?? ''),
-                                                                                specs: {
-                                                                                    computer_name: @js(data_get($d->specs, 'computer_name', '')),
-                                                                                    os: @js(data_get($d->specs, 'os', '')),
-                                                                                    memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                    storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                }
-                                                                            })">
-                                Edit
-                            </button>
-
-                            @if(auth()->user()->isAdmin())
-                                <button type="button"
-                                    class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                                    x-on:click="openDelete({{ $d->id }})">
-                                    Delete
-                                </button>
-                            @endif
+                        <div>
+                            <div class="text-gray-500 dark:text-gray-400">Last Maintenance</div>
+                            <div class="text-gray-900 dark:text-white">
+                                {{ $d->last_maintenance_date ? $d->last_maintenance_date->format('M d, Y') : 'Not yet checked' }}
+                            </div>
                         </div>
                     </div>
+
+                    @if($d->maintenance_remarks)
+                        <div class="text-sm">
+                            <div class="text-gray-500 dark:text-gray-400">Maintenance Remarks</div>
+                            <div class="text-gray-900 dark:text-white">{{ $d->maintenance_remarks }}</div>
+                        </div>
+                    @endif
+
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <a
+                            href="{{ route('admin.devices.show', $d) }}"
+                            class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                        >
+                            View
+                        </a>
+
+                        <a
+                            href="{{ route('admin.devices.history', $d) }}"
+                            class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+                        >
+                            History
+                        </a>
+
+                        <a
+                            href="{{ route('admin.devices.checklist.form', $d) }}"
+                            class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                        >
+                            Mark Checked
+                        </a>
+
+                        <button
+                            type="button"
+                            class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600"
+                            x-on:click="openEdit({
+                                id: {{ $d->id }},
+                                device_type_id: '{{ $d->device_type_id }}',
+                                computer_name: @js($d->computer_name ?? data_get($d->specs, 'computer_name', '')),
+                                property_number: @js($d->property_number),
+                                serial_number: @js($d->serial_number ?? ''),
+                                brand: @js($d->brand ?? ''),
+                                model: @js($d->model ?? ''),
+                                mac_address: @js($d->mac_address ?? ''),
+                                unit_price: @js($d->unit_price ?? ''),
+                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                status: @js($d->status ?? 'available'),
+                                condition: @js($d->condition ?? 'serviceable'),
+                                notes: @js($d->notes ?? ''),
+                                specs: {
+                                    computer_name: @js(data_get($d->specs, 'computer_name', '')),
+                                    os: @js(data_get($d->specs, 'os', '')),
+                                    memory: @js(data_get($d->specs, 'memory', '')),
+                                    storage: @js(data_get($d->specs, 'storage', '')),
+                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                }
+                            })"
+                        >
+                            Edit
+                        </button>
+
+                        @if(auth()->user()->isAdmin())
+                            <button
+                                type="button"
+                                class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                                x-on:click="openDelete({{ $d->id }})"
+                            >
+                                Delete
+                            </button>
+                        @endif
+                    </div>
                 </div>
-            @empty
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                    No devices found.
-                </div>
-            @endforelse
-        </div>
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                No devices found.
+            </div>
+        @endforelse
+    </div>
 
-        {{-- Desktop table --}}
-        <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block dark:border-gray-700 dark:bg-gray-800">
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-50 text-left dark:bg-gray-900/40">
-                        <tr>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Type</th>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Property #</th>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Serial #</th>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Acquired</th>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Last Maintenance</th>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Condition</th>
-                            <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
-                        </tr>
-                    </thead>
+    {{-- Desktop table --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block dark:border-gray-700 dark:bg-gray-800">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-left dark:bg-gray-900/40">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Type</th>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Property #</th>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Serial #</th>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Acquired</th>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Last Maintenance</th>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Condition</th>
+                        <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+                    </tr>
+                </thead>
 
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @forelse($devices as $d)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">
-                                    {{ $d->type?->name ?? '-' }}
-                                </td>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse($devices as $d)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                            <td class="px-4 py-3 text-gray-900 dark:text-white">
+                                {{ $d->type?->name ?? '-' }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">
-                                    {{ $d->property_number }}
-                                </td>
+                            <td class="px-4 py-3 text-gray-900 dark:text-white">
+                                {{ $d->property_number }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                    {{ $d->serial_number ?: '-' }}
-                                </td>
+                            <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                {{ $d->serial_number ?: '-' }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                    {{ $d->date_acquired ? $d->date_acquired->format('M d, Y') : '-' }}
-                                </td>
+                            <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                {{ $d->date_acquired ? $d->date_acquired->format('M d, Y') : '-' }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                    @if($d->last_maintenance_date)
-                                        <div class="font-medium text-gray-900 dark:text-white">
-                                            {{ $d->last_maintenance_date->format('M d, Y') }}
+                            <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                @if($d->last_maintenance_date)
+                                    <div class="font-medium text-gray-900 dark:text-white">
+                                        {{ $d->last_maintenance_date->format('M d, Y') }}
+                                    </div>
+
+                                    @if($d->maintenance_remarks)
+                                        <div class="max-w-xs truncate text-xs text-gray-500 dark:text-gray-400">
+                                            {{ $d->maintenance_remarks }}
                                         </div>
-
-                                        @if($d->maintenance_remarks)
-                                            <div class="max-w-xs truncate text-xs text-gray-500 dark:text-gray-400">
-                                                {{ $d->maintenance_remarks }}
-                                            </div>
-                                        @endif
-                                    @else
-                                        <span class="text-gray-400 dark:text-gray-500">
-                                            Not yet checked
-                                        </span>
                                     @endif
-                                </td>
+                                @else
+                                    <span class="text-gray-400 dark:text-gray-500">
+                                        Not yet checked
+                                    </span>
+                                @endif
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700 capitalize dark:text-gray-300">
-                                    {{ $d->condition ?? 'serviceable' }}
-                                </td>
+                            <td class="px-4 py-3 text-gray-700 capitalize dark:text-gray-300">
+                                {{ $d->condition ?? 'serviceable' }}
+                            </td>
 
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <a href="{{ route('admin.devices.show', $d) }}"
-                                            class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600">
-                                            View
-                                        </a>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <a
+                                        href="{{ route('admin.devices.show', $d) }}"
+                                        class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                                    >
+                                        View
+                                    </a>
 
-                                        <a href="{{ route('admin.devices.history', $d) }}"
-                                            class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600">
-                                            History
-                                        </a>
+                                    <a
+                                        href="{{ route('admin.devices.history', $d) }}"
+                                        class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+                                    >
+                                        History
+                                    </a>
 
                                     <a
                                         href="{{ route('admin.devices.checklist.form', $d) }}"
@@ -411,178 +472,243 @@
                                         Mark Checked
                                     </a>
 
-                                        <button type="button"
-                                            class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500"
-                                            x-on:click="openEdit({
-                                                                                            id: {{ $d->id }},
-                                                                                            device_type_id: '{{ $d->device_type_id }}',
-                                                                                            computer_name: @js($d->computer_name ?? data_get($d->specs, 'computer_name', '')),
-                                                                                            property_number: @js($d->property_number),
-                                                                                            serial_number: @js($d->serial_number ?? ''),
-                                                                                            brand: @js($d->brand ?? ''),
-                                                                                            model: @js($d->model ?? ''),
-                                                                                            mac_address: @js($d->mac_address ?? ''),
-                                                                                            unit_price: @js($d->unit_price ?? ''),
-                                                                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                            status: @js($d->status ?? 'available'),
-                                                                                            condition: @js($d->condition ?? 'serviceable'),
-                                                                                            notes: @js($d->notes ?? ''),
-                                                                                            specs: {
-                                                                                                computer_name: @js(data_get($d->specs, 'computer_name', '')),
-                                                                                                os: @js(data_get($d->specs, 'os', '')),
-                                                                                                memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                                storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                            }
-                                                                                        })">
-                                            Edit
-                                        </button>
+                                    <button
+                                        type="button"
+                                        class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500"
+                                        x-on:click="openEdit({
+                                            id: {{ $d->id }},
+                                            device_type_id: '{{ $d->device_type_id }}',
+                                            computer_name: @js($d->computer_name ?? data_get($d->specs, 'computer_name', '')),
+                                            property_number: @js($d->property_number),
+                                            serial_number: @js($d->serial_number ?? ''),
+                                            brand: @js($d->brand ?? ''),
+                                            model: @js($d->model ?? ''),
+                                            mac_address: @js($d->mac_address ?? ''),
+                                            unit_price: @js($d->unit_price ?? ''),
+                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                            status: @js($d->status ?? 'available'),
+                                            condition: @js($d->condition ?? 'serviceable'),
+                                            notes: @js($d->notes ?? ''),
+                                            specs: {
+                                                computer_name: @js(data_get($d->specs, 'computer_name', '')),
+                                                os: @js(data_get($d->specs, 'os', '')),
+                                                memory: @js(data_get($d->specs, 'memory', '')),
+                                                storage: @js(data_get($d->specs, 'storage', '')),
+                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                            }
+                                        })"
+                                    >
+                                        Edit
+                                    </button>
 
-                                        @if(auth()->user()->isAdmin())
-                                            <button type="button"
-                                                class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                                                x-on:click="openDelete({{ $d->id }})">
-                                                Delete
-                                            </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                    No devices found.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                    @if(auth()->user()->isAdmin())
+                                        <button
+                                            type="button"
+                                            class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                                            x-on:click="openDelete({{ $d->id }})"
+                                        >
+                                            Delete
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                No devices found.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
-        <div>
+        <div class="px-4 py-3">
             {{ $devices->links() }}
         </div>
+    </div>
 
-        {{-- ADD MODAL --}}
-        <x-modal show="addOpen" title="Add Device">
-            <form method="POST" action="{{ route('admin.devices.store') }}" class="space-y-4">
-                @csrf
+    {{-- ADD MODAL --}}
+    <x-modal show="addOpen" title="Add Device">
+        <form method="POST" action="{{ route('admin.devices.store') }}" class="space-y-4" x-on:submit="cleanUnitPrices($event.target)">
+            @csrf
 
-                <input type="hidden" name="status" value="available">
+            <input type="hidden" name="status" value="available">
 
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Device Type</label>
-                        <select name="device_type_id" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            required x-model="addTypeId">
-                            @foreach($types as $t)
-                                <option value="{{ $t->id }}">
-                                    {{ $t->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Property Number</label>
-                        <input name="property_number" value="{{ old('property_number') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required maxlength="50"
-                            pattern="[A-Za-z0-9][A-Za-z0-9\-\/]*" title="Letters, numbers, hyphens, and slashes only"
-                            placeholder="e.g. PN-2026-0001">
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Serial Number</label>
-                        <input name="serial_number" value="{{ old('serial_number') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="100"
-                            pattern="[A-Za-z0-9\-]*" title="Letters, numbers, and hyphens only"
-                            placeholder="Enter serial number">
-                    </div>
-
-                                        <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Computer Name</label>
-
-                        <input list="computer_name_options" name="computer_name"
-                            x-model="addComputerName"
-                            value="{{ old('computer_name', old('specs.computer_name')) }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            maxlength="100"
-                            placeholder="Select or type computer name"
-                            :disabled="!isComputerType(addTypeId)">
-
-                        <input type="hidden" name="specs[computer_name]"
-                            x-model="addComputerName"
-                            :disabled="!isComputerType(addTypeId)">
-                    </div>
-
-                    <datalist id="computer_name_options">
-                        @foreach($computerNames ?? [] as $computerName)
-                            @php
-                                $computerNameValue = is_object($computerName)
-                                    ? ($computerName->name ?? $computerName->computer_name ?? $computerName->title ?? '')
-                                    : $computerName;
-                            @endphp
-
-                            @if($computerNameValue)
-                                <option value="{{ $computerNameValue }}"></option>
-                            @endif
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Device Type</label>
+                    <select
+                        name="device_type_id"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        required
+                        x-model="addTypeId"
+                    >
+                        @foreach($types as $t)
+                            <option value="{{ $t->id }}">
+                                {{ $t->name }}
+                            </option>
                         @endforeach
-                    </datalist>
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Brand</label>
-                        <input name="brand" value="{{ old('brand') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="100"
-                            pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.\-\s]*" title="Letters and numbers only"
-                            placeholder="e.g. HP, Dell, ASUS">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Property Number</label>
+                    <input
+                        name="property_number"
+                        value="{{ old('property_number') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        required
+                        maxlength="50"
+                        pattern="[A-Za-z0-9][A-Za-z0-9\-\/]*"
+                        title="Letters, numbers, hyphens, and slashes only"
+                        placeholder="e.g. PN-2026-0001"
+                    >
+                </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Model</label>
-                        <input name="model" value="{{ old('model') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="100"
-                            pattern="[A-Za-z0-9][A-Za-z0-9.\-\/\s]*" title="Letters and numbers only"
-                            placeholder="Example: Epson L3110, Acer Aspire">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Serial Number</label>
+                    <input
+                        name="serial_number"
+                        value="{{ old('serial_number') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="100"
+                        pattern="[A-Za-z0-9\-]*"
+                        title="Letters, numbers, and hyphens only"
+                        placeholder="Enter serial number"
+                    >
+                </div>
 
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">MAC Address</label>
-                        <input name="mac_address" value="{{ old('mac_address') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="17"
-                            pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}" title="Format: 00:1A:2B:3C:4D:5E"
-                            placeholder="00:1A:2B:3C:4D:5E" :disabled="!isComputerType(addTypeId)">
-                    </div>
+                <div x-show="isComputerType(addTypeId)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Computer Name</label>
 
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Operating System</label>
-                        <input name="specs[os]" value="{{ old('specs.os') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="100"
-                            placeholder="Example: Windows 10, Windows 11, Ubuntu" :disabled="!isComputerType(addTypeId)">
-                    </div>
+                    <input
+                        list="computer_name_options"
+                        name="computer_name"
+                        x-model="addComputerName"
+                        value="{{ old('computer_name', old('specs.computer_name')) }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="100"
+                        placeholder="Select or type computer name"
+                        :disabled="!isComputerType(addTypeId)"
+                    >
 
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Memory</label>
-                        <input name="specs[memory]" value="{{ old('specs.memory') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="50"
-                            placeholder="Example: 8GB RAM" :disabled="!isComputerType(addTypeId)">
-                    </div>
+                    <input
+                        type="hidden"
+                        name="specs[computer_name]"
+                        x-model="addComputerName"
+                        :disabled="!isComputerType(addTypeId)"
+                    >
+                </div>
 
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Storage</label>
-                        <input name="specs[storage]" value="{{ old('specs.storage') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="50"
-                            placeholder="Example: 256GB SSD / 1TB HDD" :disabled="!isComputerType(addTypeId)">
-                    </div>
+                <datalist id="computer_name_options">
+                    @foreach($computerNames ?? [] as $computerName)
+                        @php
+                            $computerNameValue = is_object($computerName)
+                                ? ($computerName->name ?? $computerName->computer_name ?? $computerName->title ?? '')
+                                : $computerName;
+                        @endphp
 
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Form Factor</label>
-                        <input name="specs[form_factor]" value="{{ old('specs.form_factor') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" maxlength="50"
-                            placeholder="Example: Tower, SFF, Mini PC, All-in-One" :disabled="!isComputerType(addTypeId)">
-                    </div>
+                        @if($computerNameValue)
+                            <option value="{{ $computerNameValue }}"></option>
+                        @endif
+                    @endforeach
+                </datalist>
+
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Brand</label>
+                    <input
+                        name="brand"
+                        value="{{ old('brand') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="100"
+                        pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.\-\s]*"
+                        title="Letters and numbers only"
+                        placeholder="e.g. HP, Dell, ASUS"
+                    >
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Model</label>
+                    <input
+                        name="model"
+                        value="{{ old('model') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="100"
+                        pattern="[A-Za-z0-9][A-Za-z0-9.\-\/\s]*"
+                        title="Letters and numbers only"
+                        placeholder="Example: Epson L3110, Acer Aspire"
+                    >
+                </div>
+
+                <div x-show="isComputerType(addTypeId)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">MAC Address</label>
+                    <input
+                        name="mac_address"
+                        value="{{ old('mac_address') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="17"
+                        pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}"
+                        title="Format: 00:1A:2B:3C:4D:5E"
+                        placeholder="00:1A:2B:3C:4D:5E"
+                        :disabled="!isComputerType(addTypeId)"
+                    >
+                </div>
+
+                <div x-show="isComputerType(addTypeId)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Operating System</label>
+                    <input
+                        name="specs[os]"
+                        value="{{ old('specs.os') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="100"
+                        placeholder="Example: Windows 10, Windows 11, Ubuntu"
+                        :disabled="!isComputerType(addTypeId)"
+                    >
+                </div>
+
+                <div x-show="isComputerType(addTypeId)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Memory</label>
+                    <input
+                        name="specs[memory]"
+                        value="{{ old('specs.memory') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="50"
+                        placeholder="Example: 8GB RAM"
+                        :disabled="!isComputerType(addTypeId)"
+                    >
+                </div>
+
+                <div x-show="isComputerType(addTypeId)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Storage</label>
+                    <input
+                        name="specs[storage]"
+                        value="{{ old('specs.storage') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="50"
+                        placeholder="Example: 256GB SSD / 1TB HDD"
+                        :disabled="!isComputerType(addTypeId)"
+                    >
+                </div>
+
+                <div x-show="isDesktopType(addTypeId)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Form Factor</label>
+                    <select
+                        name="specs[form_factor]"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        :disabled="!isDesktopType(addTypeId)"
+                    >
+                        <option value="">-- Select Form Factor --</option>
+                        <option value="Tower Desktops" @selected(old('specs.form_factor') === 'Tower Desktops')>Tower Desktops</option>
+                        <option value="Small Form Factor (SFF) Desktops" @selected(old('specs.form_factor') === 'Small Form Factor (SFF) Desktops')>Small Form Factor (SFF) Desktops</option>
+                        <option value="All-in-One (AIO) Desktops" @selected(old('specs.form_factor') === 'All-in-One (AIO) Desktops')>All-in-One (AIO) Desktops</option>
+                        <option value="Mini PCs" @selected(old('specs.form_factor') === 'Mini PCs')>Mini PCs</option>
+                        <option value="Workstations" @selected(old('specs.form_factor') === 'Workstations')>Workstations</option>
+                    </select>
+                </div>
 
                 {{-- OS Version --}}
                 <div id="add_os_version_wrapper" style="display:none;">
@@ -631,167 +757,260 @@
                     </select>
                 </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Unit Price</label>
-                        <input name="unit_price" value="{{ old('unit_price') }}" type="number" step="0.01" min="0"
-                            max="9999999999.99" placeholder="e.g. 25000.00"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Date Acquired</label>
-                        <input name="date_acquired" value="{{ old('date_acquired') }}" type="date"
-                            max="{{ now()->format('Y-m-d') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Condition</label>
-                        <select name="condition" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                            <option value="serviceable" @selected(old('condition', 'serviceable') === 'serviceable')>
-                                Serviceable
-                            </option>
-                            <option value="unserviceable" @selected(old('condition') === 'unserviceable')>
-                                Unserviceable
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Last Maintenance Date</label>
-                        <input name="last_maintenance_date" value="{{ old('last_maintenance_date') }}" type="date"
-                            max="{{ now()->format('Y-m-d') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Unit Price</label>
+                    <input
+                        name="unit_price"
+                        value="{{ old('unit_price') }}"
+                        type="text"
+                        inputmode="decimal"
+                        placeholder="e.g. 25,000.00"
+                        class="unit-price-input mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-on:input="formatUnitPriceInput($event)"
+                    >
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium dark:text-gray-300">Maintenance Remarks</label>
-                    <textarea name="maintenance_remarks" rows="3" maxlength="1000"
+                    <label class="text-sm font-medium dark:text-gray-300">Date Acquired</label>
+                    <input
+                        name="date_acquired"
+                        value="{{ old('date_acquired') }}"
+                        type="date"
+                        max="{{ now()->format('Y-m-d') }}"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        placeholder="Example: Initial check, cleaned, inspected">{{ old('maintenance_remarks') }}</textarea>
+                    >
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium dark:text-gray-300">Notes</label>
-                    <textarea name="notes" rows="3" maxlength="2000"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white">{{ old('notes') }}</textarea>
+                    <label class="text-sm font-medium dark:text-gray-300">Condition</label>
+                    <select
+                        name="condition"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                        <option value="serviceable" @selected(old('condition', 'serviceable') === 'serviceable')>
+                            Serviceable
+                        </option>
+                        <option value="unserviceable" @selected(old('condition') === 'unserviceable')>
+                            Unserviceable
+                        </option>
+                    </select>
                 </div>
 
-                <div class="flex gap-2 pt-2">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-                        Save
-                    </button>
-
-                    <button type="button" class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        x-on:click="addOpen = false">
-                        Cancel
-                    </button>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Last Maintenance Date</label>
+                    <input
+                        name="last_maintenance_date"
+                        value="{{ old('last_maintenance_date') }}"
+                        type="date"
+                        max="{{ now()->format('Y-m-d') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
                 </div>
-            </form>
-        </x-modal>
+            </div>
 
-        {{-- EDIT MODAL --}}
-        <x-modal show="editOpen" title="Edit Device">
-            <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4">
-                @csrf
-                @method('PUT')
+            <div>
+                <label class="text-sm font-medium dark:text-gray-300">Maintenance Remarks</label>
+                <textarea
+                    name="maintenance_remarks"
+                    rows="3"
+                    maxlength="1000"
+                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="Example: Initial check, cleaned, inspected"
+                >{{ old('maintenance_remarks') }}</textarea>
+            </div>
 
-                <input type="hidden" name="status" x-model="editDevice.status">
+            <div>
+                <label class="text-sm font-medium dark:text-gray-300">Notes</label>
+                <textarea
+                    name="notes"
+                    rows="3"
+                    maxlength="2000"
+                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                >{{ old('notes') }}</textarea>
+            </div>
 
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Device Type</label>
-                        <select name="device_type_id" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            required x-model="editDevice.device_type_id">
-                            @foreach($types as $t)
-                                <option value="{{ $t->id }}">
-                                    {{ $t->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+            <div class="flex gap-2 pt-2">
+                <button
+                    type="submit"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                    Save
+                </button>
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Computer Name</label>
+                <button
+                    type="button"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    x-on:click="addOpen = false"
+                >
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </x-modal>
 
-                        <input list="computer_name_options" name="computer_name"
-                            x-model="editDevice.computer_name"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            maxlength="100"
-                            placeholder="Select or type computer name"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
+    {{-- EDIT MODAL --}}
+    <x-modal show="editOpen" title="Edit Device">
+        <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4" x-on:submit="cleanUnitPrices($event.target)">
+            @csrf
+            @method('PUT')
 
-                        <input type="hidden" name="specs[computer_name]"
-                            x-model="editDevice.computer_name"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
+            <input type="hidden" name="status" x-model="editDevice.status">
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Property Number</label>
-                        <input name="property_number" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.property_number" required maxlength="50"
-                            pattern="[A-Za-z0-9][A-Za-z0-9\-\/]*" title="Letters, numbers, hyphens, and slashes only">
-                    </div>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Device Type</label>
+                    <select
+                        name="device_type_id"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        required
+                        x-model="editDevice.device_type_id"
+                    >
+                        @foreach($types as $t)
+                            <option value="{{ $t->id }}">
+                                {{ $t->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Serial Number</label>
-                        <input name="serial_number" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.serial_number" maxlength="100" pattern="[A-Za-z0-9\-]*"
-                            title="Letters, numbers, and hyphens only" placeholder="Enter serial number">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Property Number</label>
+                    <input
+                        name="property_number"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.property_number"
+                        required
+                        maxlength="50"
+                        pattern="[A-Za-z0-9][A-Za-z0-9\-\/]*"
+                        title="Letters, numbers, hyphens, and slashes only"
+                    >
+                </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Brand</label>
-                        <input name="brand" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.brand" maxlength="100" pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.\-\s]*"
-                            title="Letters and numbers only">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Serial Number</label>
+                    <input
+                        name="serial_number"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.serial_number"
+                        maxlength="100"
+                        pattern="[A-Za-z0-9\-]*"
+                        title="Letters, numbers, and hyphens only"
+                        placeholder="Enter serial number"
+                    >
+                </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Model</label>
-                        <input name="model" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.model" maxlength="100" pattern="[A-Za-z0-9][A-Za-z0-9.\-\/\s]*"
-                            title="Letters and numbers only" placeholder="Example: Epson L3110, Acer Aspire">
-                    </div>
+                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Computer Name</label>
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">MAC Address</label>
-                        <input name="mac_address" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.mac_address" maxlength="17" pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}"
-                            title="Format: 00:1A:2B:3C:4D:5E" placeholder="00:1A:2B:3C:4D:5E"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
+                    <input
+                        list="computer_name_options"
+                        name="computer_name"
+                        x-model="editDevice.computer_name"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        maxlength="100"
+                        placeholder="Select or type computer name"
+                        :disabled="!isComputerType(editDevice.device_type_id)"
+                    >
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Operating System</label>
-                        <input name="specs[os]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.specs.os" maxlength="100"
-                            placeholder="Example: Windows 10, Windows 11, Ubuntu"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
+                    <input
+                        type="hidden"
+                        name="specs[computer_name]"
+                        x-model="editDevice.computer_name"
+                        :disabled="!isComputerType(editDevice.device_type_id)"
+                    >
+                </div>
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Memory</label>
-                        <input name="specs[memory]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.specs.memory" maxlength="50" placeholder="Example: 8GB RAM"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Brand</label>
+                    <input
+                        name="brand"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.brand"
+                        maxlength="100"
+                        pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.\-\s]*"
+                        title="Letters and numbers only"
+                    >
+                </div>
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Storage</label>
-                        <input name="specs[storage]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.specs.storage" maxlength="50" placeholder="Example: 256GB SSD / 1TB HDD"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Model</label>
+                    <input
+                        name="model"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.model"
+                        maxlength="100"
+                        pattern="[A-Za-z0-9][A-Za-z0-9.\-\/\s]*"
+                        title="Letters and numbers only"
+                        placeholder="Example: Epson L3110, Acer Aspire"
+                    >
+                </div>
 
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium dark:text-gray-300">Form Factor</label>
-                        <input name="specs[form_factor]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.specs.form_factor" maxlength="50"
-                            placeholder="Example: Tower, SFF, Mini PC, All-in-One"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
+                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">MAC Address</label>
+                    <input
+                        name="mac_address"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.mac_address"
+                        maxlength="17"
+                        pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}"
+                        title="Format: 00:1A:2B:3C:4D:5E"
+                        placeholder="00:1A:2B:3C:4D:5E"
+                        :disabled="!isComputerType(editDevice.device_type_id)"
+                    >
+                </div>
+
+                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Operating System</label>
+                    <input
+                        name="specs[os]"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.specs.os"
+                        maxlength="100"
+                        placeholder="Example: Windows 10, Windows 11, Ubuntu"
+                        :disabled="!isComputerType(editDevice.device_type_id)"
+                    >
+                </div>
+
+                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Memory</label>
+                    <input
+                        name="specs[memory]"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.specs.memory"
+                        maxlength="50"
+                        placeholder="Example: 8GB RAM"
+                        :disabled="!isComputerType(editDevice.device_type_id)"
+                    >
+                </div>
+
+                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Storage</label>
+                    <input
+                        name="specs[storage]"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.specs.storage"
+                        maxlength="50"
+                        placeholder="Example: 256GB SSD / 1TB HDD"
+                        :disabled="!isComputerType(editDevice.device_type_id)"
+                    >
+                </div>
+
+                <div x-show="isDesktopType(editDevice.device_type_id)" x-cloak>
+                    <label class="text-sm font-medium dark:text-gray-300">Form Factor</label>
+                    <select
+                        name="specs[form_factor]"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.specs.form_factor"
+                        :disabled="!isDesktopType(editDevice.device_type_id)"
+                    >
+                        <option value="">-- Select Form Factor --</option>
+                        <option value="Tower Desktops">Tower Desktops</option>
+                        <option value="Small Form Factor (SFF) Desktops">Small Form Factor (SFF) Desktops</option>
+                        <option value="All-in-One (AIO) Desktops">All-in-One (AIO) Desktops</option>
+                        <option value="Mini PCs">Mini PCs</option>
+                        <option value="Workstations">Workstations</option>
+                    </select>
+                </div>
 
                 {{-- OS Version --}}
                 <div id="edit_os_version_wrapper" style="display:none;">
@@ -840,92 +1059,133 @@
                     </select>
                 </div>
 
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Unit Price</label>
-                        <input name="unit_price" type="number" step="0.01" min="0" max="9999999999.99"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white" x-model="editDevice.unit_price">
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Date Acquired</label>
-                        <input name="date_acquired" type="date" max="{{ now()->format('Y-m-d') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.date_acquired">
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Condition</label>
-                        <select name="condition" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.condition">
-                            <option value="serviceable">Serviceable</option>
-                            <option value="unserviceable">Unserviceable</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-medium dark:text-gray-300">Last Maintenance Date</label>
-                        <input name="last_maintenance_date" type="date" max="{{ now()->format('Y-m-d') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            x-model="editDevice.last_maintenance_date">
-                    </div>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Unit Price</label>
+                    <input
+                        name="unit_price"
+                        type="text"
+                        inputmode="decimal"
+                        class="unit-price-input mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.unit_price"
+                        x-on:input="formatUnitPriceInput($event)"
+                    >
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium dark:text-gray-300">Maintenance Remarks</label>
-                    <textarea name="maintenance_remarks" rows="3" maxlength="1000"
+                    <label class="text-sm font-medium dark:text-gray-300">Date Acquired</label>
+                    <input
+                        name="date_acquired"
+                        type="date"
+                        max="{{ now()->format('Y-m-d') }}"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        x-model="editDevice.maintenance_remarks"></textarea>
+                        x-model="editDevice.date_acquired"
+                    >
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium dark:text-gray-300">Notes</label>
-                    <textarea name="notes" rows="3" maxlength="2000"
+                    <label class="text-sm font-medium dark:text-gray-300">Condition</label>
+                    <select
+                        name="condition"
                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        x-model="editDevice.notes"></textarea>
+                        x-model="editDevice.condition"
+                    >
+                        <option value="serviceable">Serviceable</option>
+                        <option value="unserviceable">Unserviceable</option>
+                    </select>
                 </div>
 
-                <div class="flex gap-2 pt-2">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-                        Save Changes
-                    </button>
-
-                    <button type="button" class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        x-on:click="editOpen = false">
-                        Cancel
-                    </button>
+                <div>
+                    <label class="text-sm font-medium dark:text-gray-300">Last Maintenance Date</label>
+                    <input
+                        name="last_maintenance_date"
+                        type="date"
+                        max="{{ now()->format('Y-m-d') }}"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        x-model="editDevice.last_maintenance_date"
+                    >
                 </div>
-            </form>
-        </x-modal>
-
-        {{-- DELETE MODAL --}}
-        <x-modal show="deleteOpen" title="Delete Device">
-            <div class="space-y-3">
-                <div class="text-sm text-gray-700 dark:text-gray-300">
-                    Are you sure you want to delete this device?
-                </div>
-
-                <form method="POST" :action="`{{ url('/admin/devices') }}/${deleteDeviceId}`"
-                    @submit="if (!deleteDeviceId) $event.preventDefault()" class="flex gap-2">
-                    @csrf
-                    @method('DELETE')
-
-                    <button type="submit" x-ref="confirmDeleteBtn"
-                        class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600">
-                        Confirm
-                    </button>
-
-                    <button type="button" class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        x-on:click="deleteOpen = false">
-                        Cancel
-                    </button>
-                </form>
             </div>
-        </x-modal>
-    </div>
+
+            <div>
+                <label class="text-sm font-medium dark:text-gray-300">Maintenance Remarks</label>
+                <textarea
+                    name="maintenance_remarks"
+                    rows="3"
+                    maxlength="1000"
+                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    x-model="editDevice.maintenance_remarks"
+                ></textarea>
+            </div>
+
+            <div>
+                <label class="text-sm font-medium dark:text-gray-300">Notes</label>
+                <textarea
+                    name="notes"
+                    rows="3"
+                    maxlength="2000"
+                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    x-model="editDevice.notes"
+                ></textarea>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button
+                    type="submit"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                    Save Changes
+                </button>
+
+                <button
+                    type="button"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    x-on:click="editOpen = false"
+                >
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </x-modal>
+
+    {{-- DELETE MODAL --}}
+    <x-modal show="deleteOpen" title="Delete Device">
+        <div class="space-y-3">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+                Are you sure you want to delete this device?
+            </div>
+
+            <form
+                method="POST"
+                :action="`{{ url('/admin/devices') }}/${deleteDeviceId}`"
+                @submit="if (!deleteDeviceId) $event.preventDefault()"
+                class="flex gap-2"
+            >
+                @csrf
+                @method('DELETE')
+
+                <button
+                    type="submit"
+                    x-ref="confirmDeleteBtn"
+                    class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                >
+                    Confirm
+                </button>
+
+                <button
+                    type="button"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    x-on:click="deleteOpen = false"
+                >
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </x-modal>
+</div>
+
 @push('scripts')
 <script>
 (function () {
-    // ── ADD MODAL ──────────────────────────────────────────────
     var typeNames = @json($types->pluck('name', 'id'));
 
     function getTypeName(typeId) {
@@ -941,13 +1201,13 @@
     function hide(el) { if (el) el.style.display = 'none'; }
 
     // --- ADD modal ---
-    var addTypeSelect    = document.querySelector('[x-model="addTypeId"]');
-    var addOsVerSel      = document.getElementById('add_os_version_select');
-    var addMsVerSel      = document.getElementById('add_ms_version_select');
-    var addOsVerWrap     = document.getElementById('add_os_version_wrapper');
-    var addOsLicWrap     = document.getElementById('add_os_license_wrapper');
-    var addMsVerWrap     = document.getElementById('add_ms_version_wrapper');
-    var addMsLicWrap     = document.getElementById('add_ms_license_wrapper');
+    var addTypeSelect = document.querySelector('[x-model="addTypeId"]');
+    var addOsVerSel    = document.getElementById('add_os_version_select');
+    var addMsVerSel    = document.getElementById('add_ms_version_select');
+    var addOsVerWrap   = document.getElementById('add_os_version_wrapper');
+    var addOsLicWrap   = document.getElementById('add_os_license_wrapper');
+    var addMsVerWrap   = document.getElementById('add_ms_version_wrapper');
+    var addMsLicWrap   = document.getElementById('add_ms_license_wrapper');
 
     function updateAddFields() {
         var typeId = addTypeSelect ? addTypeSelect.value : '';
@@ -960,7 +1220,6 @@
 
     if (addTypeSelect) {
         addTypeSelect.addEventListener('change', updateAddFields);
-        // Also watch via MutationObserver since Alpine controls the value
         new MutationObserver(updateAddFields).observe(addTypeSelect, { attributes: true, childList: true, subtree: true });
     }
     if (addOsVerSel) {
@@ -975,13 +1234,13 @@
     }
 
     // --- EDIT modal ---
-    var editTypeSelect   = document.querySelector('[x-model="editDevice.device_type_id"]');
-    var editOsVerSel     = document.getElementById('edit_os_version_select');
-    var editMsVerSel     = document.getElementById('edit_ms_version_select');
-    var editOsVerWrap    = document.getElementById('edit_os_version_wrapper');
-    var editOsLicWrap    = document.getElementById('edit_os_license_wrapper');
-    var editMsVerWrap    = document.getElementById('edit_ms_version_wrapper');
-    var editMsLicWrap    = document.getElementById('edit_ms_license_wrapper');
+    var editTypeSelect = document.querySelector('[x-model="editDevice.device_type_id"]');
+    var editOsVerSel    = document.getElementById('edit_os_version_select');
+    var editMsVerSel    = document.getElementById('edit_ms_version_select');
+    var editOsVerWrap   = document.getElementById('edit_os_version_wrapper');
+    var editOsLicWrap   = document.getElementById('edit_os_license_wrapper');
+    var editMsVerWrap   = document.getElementById('edit_ms_version_wrapper');
+    var editMsLicWrap   = document.getElementById('edit_ms_license_wrapper');
 
     function updateEditFields() {
         var typeId = editTypeSelect ? editTypeSelect.value : '';
