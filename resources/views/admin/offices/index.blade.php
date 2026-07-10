@@ -86,9 +86,9 @@ document.addEventListener('alpine:init', () => {
 >
     {{-- Breadcrumb --}}
     <div class="text-sm text-gray-500 leading-6 break-words">
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.colleges.index') }}">Colleges</a>
+        <a class="text-blue-600 hover:underline" href="{{ route('admin.locations.index') }}">Locations</a>
         <span class="mx-1">/</span>
-        <span class="text-gray-700 font-medium">{{ $college->name }}</span>
+        <span class="text-gray-700 font-medium">{{ $location->name }}</span>
         <span class="mx-1">/</span>
         <span>Offices</span>
     </div>
@@ -96,7 +96,7 @@ document.addEventListener('alpine:init', () => {
     {{-- Top section --}}
     <div class="flex items-start justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Offices in {{ $college->name }}</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Offices in {{ $location->name }}</h1>
         </div>
 
         @if(auth()->user()->isAdmin())
@@ -222,7 +222,7 @@ document.addEventListener('alpine:init', () => {
 
     {{-- Add modal --}}
     <x-modal show="addOpen" title="Add Office">
-        <form method="POST" action="{{ route('admin.offices.store', $college) }}" class="space-y-3">
+        <form method="POST" action="{{ route('admin.offices.store', $location) }}" class="space-y-3">
             @csrf
 
             <div class="flex items-center justify-between">
@@ -323,7 +323,7 @@ document.addEventListener('alpine:init', () => {
     <x-modal show="editOpen" title="Edit Office">
         <form
             method="POST"
-            :action="`{{ url('/colleges/' . $college->id . '/offices') }}/${editOffice.id}`"
+            :action="`{{ url('/locations/' . $location->id . '/offices') }}/${editOffice.id}`"
             class="space-y-3"
         >
             @csrf
@@ -367,7 +367,7 @@ document.addEventListener('alpine:init', () => {
 
             <form
                 method="POST"
-                :action="`{{ url('/colleges/' . $college->id . '/offices') }}/${deleteOfficeId}`"
+                :action="`{{ url('/locations/' . $location->id . '/offices') }}/${deleteOfficeId}`"
                 @submit="if (!deleteOfficeId) $event.preventDefault()"
                 class="flex gap-2"
             >

@@ -2,6 +2,11 @@
 
 @section('title', 'Device Manager')
 @section('page_title', 'Device Manager')
+@section('breadcrumbs')
+    <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
+    <span>/</span>
+    <span class="font-medium text-gray-800 dark:text-gray-100">Equipment Manager</span>
+@endsection
 
 @section('content')
 
@@ -10,32 +15,34 @@
                                         editOpen: false,
                                         deleteOpen: false,
 
-                                        addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
+                                addTypeId: '{{ old('device_type_id', $types->first()?->id) }}',
+                                addComputerName: @js(old('computer_name', old('specs.computer_name', ''))),
 
                                         typeNames: @js($types->pluck('name', 'id')),
 
-                                        editDevice: {
-                                            id: null,
-                                            device_type_id: '',
-                                            property_number: '',
-                                            serial_number: '',
-                                            brand: '',
-                                            model: '',
-                                            mac_address: '',
-                                            unit_price: '',
-                                            date_acquired: '',
-                                            last_maintenance_date: '',
-                                            maintenance_remarks: '',
-                                            notes: '',
-                                            status: 'available',
-                                            condition: 'serviceable',
-                                            specs: {
-                                                os: '',
-                                                memory: '',
-                                                storage: '',
-                                                form_factor: ''
-                                            }
-                                        },
+                                editDevice: {
+                                    id: null,
+                                    device_type_id: '',
+                                    property_number: '',
+                                    serial_number: '',
+                                    computer_name: '',
+                                    brand: '',
+                                    model: '',
+                                    mac_address: '',
+                                    unit_price: '',
+                                    date_acquired: '',
+                                    last_maintenance_date: '',
+                                    maintenance_remarks: '',
+                                    notes: '',
+                                    status: 'available',
+                                    condition: 'serviceable',
+                                    specs: {
+                                        computer_name: '',
+                                        memory: '',
+                                        storage: '',
+                                        form_factor: ''
+                                    }
+                                },
 
                                         deleteDeviceId: null,
 
@@ -48,30 +55,57 @@
                                             return name === 'desktop' || name === 'laptop';
                                         },
 
-                                        isDesktopType(typeId) {
-    return this.getTypeName(typeId) === 'desktop';
-},
+                                isDesktopType(typeId) {
+                                    return this.getTypeName(typeId) === 'desktop';
+                                },
 
-                                        openEdit(device) {
-                                            device.specs = device.specs ?? {};
-                                            device.specs.os = device.specs.os ?? '';
-                                            device.specs.memory = device.specs.memory ?? '';
-                                            device.specs.storage = device.specs.storage ?? '';
-                                            device.specs.form_factor = device.specs.form_factor ?? '';
-                                            device.serial_number = device.serial_number ?? '';
-                                            device.status = device.status ?? 'available';
-                                            device.condition = device.condition ?? 'serviceable';
+                                formatUnitPriceValue(value) {
+                                    value = String(value ?? '').replace(/[^0-9.]/g, '');
 
-                                            this.editDevice = device;
-                                            this.editOpen = true;
-                                        },
+                                    let parts = value.split('.');
+                                    let whole = parts.shift() || '';
+                                    let decimals = parts.length ? '.' + parts.join('').slice(0, 2) : '';
 
-                                        openDelete(id) {
-                                            this.deleteDeviceId = id;
-                                            this.deleteOpen = true;
-                                            this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
-                                        }
-                                    }" class="space-y-5">
+                                    whole = whole.replace(/^0+(?=\d)/, '');
+                                    whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                                    return whole + decimals;
+                                },
+
+                                formatUnitPriceInput(event) {
+                                    event.target.value = this.formatUnitPriceValue(event.target.value);
+                                },
+
+                                cleanUnitPrices(form) {
+                                    form.querySelectorAll('.unit-price-input').forEach((input) => {
+                                        input.value = String(input.value ?? '').replace(/,/g, '');
+                                    });
+                                },
+
+                                openEdit(device) {
+                                    device.specs = device.specs ?? {};
+                                    device.specs.computer_name = device.specs.computer_name ?? '';
+                                    device.computer_name = device.computer_name ?? device.specs.computer_name ?? '';
+                                    device.specs.memory = device.specs.memory ?? '';
+                                    device.specs.storage = device.specs.storage ?? '';
+                                    device.specs.form_factor = device.specs.form_factor ?? '';
+                                    device.serial_number = device.serial_number ?? '';
+                                    device.status = device.status ?? 'available';
+                                    device.condition = device.condition ?? 'serviceable';
+
+                                    this.editDevice = device;
+                                    this.editDevice.unit_price = this.formatUnitPriceValue(this.editDevice.unit_price);
+                                    this.editOpen = true;
+                                },
+
+                                openDelete(id) {
+                                    this.deleteDeviceId = id;
+                                    this.deleteOpen = true;
+                                    this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
+                                }
+                            }"
+         x-init="$nextTick(() => $el.querySelectorAll('.unit-price-input').forEach((input) => input.value = formatUnitPriceValue(input.value)))"
+         class="space-y-5">
         <div class="flex items-start justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">
@@ -134,7 +168,7 @@
                     <select name="college" onchange="this.form.submit()"
                         class="w-full truncate rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
                         <option value="" @selected(empty($collegeId))>
-                            All Colleges
+                            All Locations
                         </option>
 
                         @foreach($colleges as $college)
@@ -226,13 +260,6 @@
                                 </div>
 
                                 <div>
-                                    <div class="text-gray-500">Operating System</div>
-                                    <div class="text-gray-900">
-                                        {{ data_get($d->specs, 'os', '-') ?: '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
                                     <div class="text-gray-500">Memory</div>
                                     <div class="text-gray-900">
                                         {{ data_get($d->specs, 'memory', '-') ?: '-' }}
@@ -282,40 +309,38 @@
                                 History
                             </a>
 
-                            <form method="POST" action="{{ route('admin.devices.markChecked', $d) }}">
-                                @csrf
-                                @method('PATCH')
 
-                                <button type="submit"
-                                    class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
-                                    Mark Checked
-                                </button>
-                            </form>
+                            <a href="{{ route('admin.devices.checklist.form', $d) }}"
+                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
+                                Mark Checked
+                            </a>
+
 
                             <button type="button"
                                 class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                 x-on:click="openEdit({
-                                                                                                id: {{ $d->id }},
-                                                                                                device_type_id: '{{ $d->device_type_id }}',
-                                                                                                property_number: @js($d->property_number),
-                                                                                                serial_number: @js($d->serial_number ?? ''),
-                                                                                                brand: @js($d->brand ?? ''),
-                                                                                                model: @js($d->model ?? ''),
-                                                                                                mac_address: @js($d->mac_address ?? ''),
-                                                                                                unit_price: @js($d->unit_price ?? ''),
-                                                                                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                                status: @js($d->status ?? 'available'),
-                                                                                                condition: @js($d->condition ?? 'serviceable'),
-                                                                                                notes: @js($d->notes ?? ''),
-                                                                                                specs: {
-                                                                                                    os: @js(data_get($d->specs, 'os', '')),
-                                                                                                    memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                                    storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                                }
-                                                                                            })">
+                                                                                id: {{ $d->id }},
+                                                                                device_type_id: '{{ $d->device_type_id }}',
+                                                                                computer_name: @js($d->computer_name ?? data_get($d->specs, 'computer_name', '')),
+                                                                                property_number: @js($d->property_number),
+                                                                                serial_number: @js($d->serial_number ?? ''),
+                                                                                brand: @js($d->brand ?? ''),
+                                                                                model: @js($d->model ?? ''),
+                                                                                mac_address: @js($d->mac_address ?? ''),
+                                                                                unit_price: @js($d->unit_price ?? ''),
+                                                                                date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                                                                last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                                                                maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                                                                status: @js($d->status ?? 'available'),
+                                                                                condition: @js($d->condition ?? 'serviceable'),
+                                                                                notes: @js($d->notes ?? ''),
+                                                                                specs: {
+                                                                                    computer_name: @js(data_get($d->specs, 'computer_name', '')),
+                                                                                    memory: @js(data_get($d->specs, 'memory', '')),
+                                                                                    storage: @js(data_get($d->specs, 'storage', '')),
+                                                                                    form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                                                                }
+                                                                            })">
                                 Edit
                             </button>
 
@@ -405,40 +430,38 @@
                                             History
                                         </a>
 
-                                        <form method="POST" action="{{ route('admin.devices.markChecked', $d) }}">
-                                            @csrf
-                                            @method('PATCH')
-
-                                            <button type="submit"
-                                                class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
-                                                Mark Checked
-                                            </button>
-                                        </form>
+                                    <a
+                                        href="{{ route('admin.devices.checklist.form', $d) }}"
+                                        class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                                    >
+                                        Mark Checked
+                                    </a>
 
                                         <button type="button"
                                             class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
                                             x-on:click="openEdit({
-                                                                                                            id: {{ $d->id }},
-                                                                                                            device_type_id: '{{ $d->device_type_id }}',
-                                                                                                            property_number: @js($d->property_number),
-                                                                                                            serial_number: @js($d->serial_number ?? ''),
-                                                                                                            brand: @js($d->brand ?? ''),
-                                                                                                            model: @js($d->model ?? ''),
-                                                                                                            mac_address: @js($d->mac_address ?? ''),
-                                                                                                            unit_price: @js($d->unit_price ?? ''),
-                                                                                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
-                                                                                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
-                                                                                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
-                                                                                                            status: @js($d->status ?? 'available'),
-                                                                                                            condition: @js($d->condition ?? 'serviceable'),
-                                                                                                            notes: @js($d->notes ?? ''),
-                                                                                                            specs: {
-                                                                                                                os: @js(data_get($d->specs, 'os', '')),
-                                                                                                                memory: @js(data_get($d->specs, 'memory', '')),
-                                                                                                                storage: @js(data_get($d->specs, 'storage', '')),
-                                                                                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
-                                                                                                            }
-                                                                                                        })">
+                                                                                            id: {{ $d->id }},
+                                                                                            device_type_id: '{{ $d->device_type_id }}',
+                                                                                            computer_name: @js($d->computer_name ?? data_get($d->specs, 'computer_name', '')),
+                                                                                            property_number: @js($d->property_number),
+                                                                                            serial_number: @js($d->serial_number ?? ''),
+                                                                                            brand: @js($d->brand ?? ''),
+                                                                                            model: @js($d->model ?? ''),
+                                                                                            mac_address: @js($d->mac_address ?? ''),
+                                                                                            unit_price: @js($d->unit_price ?? ''),
+                                                                                            date_acquired: @js($d->date_acquired ? $d->date_acquired->format('Y-m-d') : ''),
+                                                                                            last_maintenance_date: @js($d->last_maintenance_date ? $d->last_maintenance_date->format('Y-m-d') : ''),
+                                                                                            maintenance_remarks: @js($d->maintenance_remarks ?? ''),
+                                                                                            status: @js($d->status ?? 'available'),
+                                                                                            condition: @js($d->condition ?? 'serviceable'),
+                                                                                            notes: @js($d->notes ?? ''),
+                                                                                            specs: {
+                                                                                                computer_name: @js(data_get($d->specs, 'computer_name', '')),
+                                                                                                memory: @js(data_get($d->specs, 'memory', '')),
+                                                                                                storage: @js(data_get($d->specs, 'storage', '')),
+                                                                                                form_factor: @js(data_get($d->specs, 'form_factor', ''))
+                                                                                            }
+                                                                                        })">
                                             Edit
                                         </button>
 
@@ -470,7 +493,7 @@
 
         {{-- ADD MODAL --}}
         <x-modal show="addOpen" title="Add Device">
-            <form method="POST" action="{{ route('admin.devices.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.devices.store') }}" class="space-y-4" x-on:submit="cleanUnitPrices($event.target)">
                 @csrf
 
                 <input type="hidden" name="status" value="available">
@@ -504,6 +527,36 @@
                             placeholder="Enter serial number">
                     </div>
 
+                                        <div x-show="isComputerType(addTypeId)" x-cloak>
+                        <label class="text-sm font-medium">Computer Name</label>
+
+                        <input list="computer_name_options" name="computer_name"
+                            x-model="addComputerName"
+                            value="{{ old('computer_name', old('specs.computer_name')) }}"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            maxlength="100"
+                            placeholder="Select or type computer name"
+                            :disabled="!isComputerType(addTypeId)">
+
+                        <input type="hidden" name="specs[computer_name]"
+                            x-model="addComputerName"
+                            :disabled="!isComputerType(addTypeId)">
+                    </div>
+
+                    <datalist id="computer_name_options">
+                        @foreach($computerNames ?? [] as $computerName)
+                            @php
+                                $computerNameValue = is_object($computerName)
+                                    ? ($computerName->name ?? $computerName->computer_name ?? $computerName->title ?? '')
+                                    : $computerName;
+                            @endphp
+
+                            @if($computerNameValue)
+                                <option value="{{ $computerNameValue }}"></option>
+                            @endif
+                        @endforeach
+                    </datalist>
+
                     <div>
                         <label class="text-sm font-medium">Brand</label>
                         <input name="brand" value="{{ old('brand') }}"
@@ -529,13 +582,6 @@
                     </div>
 
                     <div x-show="isComputerType(addTypeId)" x-cloak>
-                        <label class="text-sm font-medium">Operating System</label>
-                        <input name="specs[os]" value="{{ old('specs.os') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2" maxlength="100"
-                            placeholder="Example: Windows 10, Windows 11, Ubuntu" :disabled="!isComputerType(addTypeId)">
-                    </div>
-
-                    <div x-show="isComputerType(addTypeId)" x-cloak>
                         <label class="text-sm font-medium">Memory</label>
                         <input name="specs[memory]" value="{{ old('specs.memory') }}"
                             class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2" maxlength="50"
@@ -551,9 +597,18 @@
 
                     <div x-show="isDesktopType(addTypeId)" x-cloak>
                         <label class="text-sm font-medium">Form Factor</label>
-                        <input name="specs[form_factor]" value="{{ old('specs.form_factor') }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2" maxlength="50"
-                            placeholder="Example: Tower, SFF, Mini PC, All-in-One" :disabled="!isDesktopType(addTypeId)">
+                        <select
+                            name="specs[form_factor]"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            :disabled="!isDesktopType(addTypeId)"
+                        >
+                            <option value="">-- Select Form Factor --</option>
+                            <option value="Tower Desktops" @selected(old('specs.form_factor') === 'Tower Desktops')>Tower Desktops</option>
+                            <option value="Small Form Factor (SFF) Desktops" @selected(old('specs.form_factor') === 'Small Form Factor (SFF) Desktops')>Small Form Factor (SFF) Desktops</option>
+                            <option value="All-in-One (AIO) Desktops" @selected(old('specs.form_factor') === 'All-in-One (AIO) Desktops')>All-in-One (AIO) Desktops</option>
+                            <option value="Mini PCs" @selected(old('specs.form_factor') === 'Mini PCs')>Mini PCs</option>
+                            <option value="Workstations" @selected(old('specs.form_factor') === 'Workstations')>Workstations</option>
+                        </select>
                     </div>
 
                     {{-- OS Version --}}
@@ -607,9 +662,15 @@
 
                     <div>
                         <label class="text-sm font-medium">Unit Price</label>
-                        <input name="unit_price" value="{{ old('unit_price') }}" type="number" step="0.01" min="0"
-                            max="9999999999.99" placeholder="e.g. 25000.00"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                        <input
+                            name="unit_price"
+                            value="{{ old('unit_price') }}"
+                            type="text"
+                            inputmode="decimal"
+                            placeholder="e.g. 25,000.00"
+                            class="unit-price-input mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            x-on:input="formatUnitPriceInput($event)"
+                        >
                     </div>
 
                     <div>
@@ -667,7 +728,7 @@
 
         {{-- EDIT MODAL --}}
         <x-modal show="editOpen" title="Edit Device">
-            <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4">
+            <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4" x-on:submit="cleanUnitPrices($event.target)">
                 @csrf
                 @method('PUT')
 
@@ -684,6 +745,21 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
+                        <label class="text-sm font-medium">Computer Name</label>
+
+                        <input list="computer_name_options" name="computer_name"
+                            x-model="editDevice.computer_name"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            maxlength="100"
+                            placeholder="Select or type computer name"
+                            :disabled="!isComputerType(editDevice.device_type_id)">
+
+                        <input type="hidden" name="specs[computer_name]"
+                            x-model="editDevice.computer_name"
+                            :disabled="!isComputerType(editDevice.device_type_id)">
                     </div>
 
                     <div>
@@ -723,14 +799,6 @@
                     </div>
 
                     <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                        <label class="text-sm font-medium">Operating System</label>
-                        <input name="specs[os]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                            x-model="editDevice.specs.os" maxlength="100"
-                            placeholder="Example: Windows 10, Windows 11, Ubuntu"
-                            :disabled="!isComputerType(editDevice.device_type_id)">
-                    </div>
-
-                    <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
                         <label class="text-sm font-medium">Memory</label>
                         <input name="specs[memory]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                             x-model="editDevice.specs.memory" maxlength="50" placeholder="Example: 8GB RAM"
@@ -746,10 +814,19 @@
 
                     <div x-show="isDesktopType(editDevice.device_type_id)" x-cloak>
                         <label class="text-sm font-medium">Form Factor</label>
-                        <input name="specs[form_factor]" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                            x-model="editDevice.specs.form_factor" maxlength="50"
-                            placeholder="Example: Tower, SFF, Mini PC, All-in-One"
-                            :disabled="!isDesktopType(editDevice.device_type_id)">
+                        <select
+                            name="specs[form_factor]"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            x-model="editDevice.specs.form_factor"
+                            :disabled="!isDesktopType(editDevice.device_type_id)"
+                        >
+                            <option value="">-- Select Form Factor --</option>
+                            <option value="Tower Desktops">Tower Desktops</option>
+                            <option value="Small Form Factor (SFF) Desktops">Small Form Factor (SFF) Desktops</option>
+                            <option value="All-in-One (AIO) Desktops">All-in-One (AIO) Desktops</option>
+                            <option value="Mini PCs">Mini PCs</option>
+                            <option value="Workstations">Workstations</option>
+                        </select>
                     </div>
 
                     {{-- OS Version --}}
@@ -803,8 +880,14 @@
 
                     <div>
                         <label class="text-sm font-medium">Unit Price</label>
-                        <input name="unit_price" type="number" step="0.01" min="0" max="9999999999.99"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2" x-model="editDevice.unit_price">
+                        <input
+                            name="unit_price"
+                            type="text"
+                            inputmode="decimal"
+                            class="unit-price-input mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            x-model="editDevice.unit_price"
+                            x-on:input="formatUnitPriceInput($event)"
+                        >
                     </div>
 
                     <div>

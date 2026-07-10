@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\College;
+use App\Models\Location;
 use App\Models\Device;
 use App\Models\DeviceMaintenanceRecord;
 use App\Models\DeviceType;
 use App\Models\Office;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -30,10 +31,11 @@ class ReportController extends Controller
         return view('admin.reports.assets', array_merge([
             'devices' => $devices,
             'selectedTypeId' => $request->integer('type_id'),
-            'selectedCollegeId' => $request->integer('college_id'),
+            'selectedLocationId' => ($request->integer('location_id') ?: $request->integer('college_id')),
+            'selectedCollegeId' => ($request->integer('location_id') ?: $request->integer('college_id')), // backward-compatible variable for existing report views,
             'selectedOfficeId' => $request->integer('office_id'),
             'q' => $request->string('q')->toString(),
-        ], $this->filterOptions()));
+        ], $this->filterOptions(($request->integer('location_id') ?: $request->integer('college_id')) ?: null)));
     }
 
     public function accounts(Request $request)
@@ -72,20 +74,131 @@ class ReportController extends Controller
 
     public function checkedEquipment(Request $request)
     {
-        $adminId = $request->integer('admin_id') ?: null;
+        $checkerId = $request->integer('checker_id') ?: $request->integer('admin_id') ?: null;
         $typeId = $request->integer('type_id') ?: null;
         $dateFrom = $request->query('date_from');
         $dateTo = $request->query('date_to');
         $q = $request->string('q')->toString();
 
+        $records = $this->checkedEquipmentQuery($request)
+            ->orderByDesc('maintenance_date')
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
+
+        $checkerSummary = DeviceMaintenanceRecord::query()
+            ->selectRaw('checked_by, COUNT(*) as total')
+            ->whereNotNull('checked_by')
+            ->with('checkedBy')
+            ->groupBy('checked_by')
+            ->orderByDesc('total')
+            ->get();
+
+        return view('admin.reports.checked-equipment', [
+            'records' => $records,
+            'adminSummary' => $checkerSummary,
+            'checkerSummary' => $checkerSummary,
+            'adminUsers' => User::orderBy('name')->get(),
+            'checkerUsers' => User::orderBy('name')->get(),
+            'types' => DeviceType::orderBy('name')->get(),
+            'adminId' => $checkerId,
+            'checkerId' => $checkerId,
+            'typeId' => $typeId,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'q' => $q,
+        ]);
+    }
+
+    public function checkedEquipmentPdf(DeviceMaintenanceRecord $record)
+    {
+        $record->load([
+            'device.type',
+            'device.currentAssignment.staff.office.location',
+            'checkedBy',
+        ]);
+
+        abort_if(! $record->device, 404);
+
+        $pdf = Pdf::loadView('admin.reports.checked-equipment-pdf', [
+            'record' => $record,
+            'device' => $record->device,
+            'checklistItems' => $this->checklistItems(),
+            'softwareItems' => $this->softwareItems(),
+        ])->setPaper([0, 0, 612, 936], 'landscape');
+
+        $propertyNumber = preg_replace('/[^A-Za-z0-9_-]+/', '-', $record->device->property_number ?? 'device');
+        $date = $record->maintenance_date?->format('Y-m-d') ?? now()->format('Y-m-d');
+
+        return $pdf->stream("maintenance-checklist-{$propertyNumber}-{$date}.pdf");
+    }
+
+    public function checkedEquipmentSelectedPdf(Request $request)
+    {
+        $data = $request->validate([
+            'record_ids' => ['required', 'array', 'min:1'],
+            'record_ids.*' => ['integer', 'exists:device_maintenance_records,id'],
+        ], [
+            'record_ids.required' => 'Please select at least one checked equipment record to print.',
+            'record_ids.min' => 'Please select at least one checked equipment record to print.',
+        ]);
+
         $records = DeviceMaintenanceRecord::query()
             ->with([
                 'device.type',
-                'device.currentAssignment.staff.office.college',
+                'device.currentAssignment.staff.office.location',
                 'checkedBy',
             ])
-            ->whereHas('checkedBy', fn ($query) => $query->where('role', 'admin'))
-            ->when($adminId, fn ($query) => $query->where('checked_by', $adminId))
+            ->whereNotNull('checked_by')
+            ->whereIn('id', $data['record_ids'])
+            ->orderBy('maintenance_date')
+            ->orderBy('id')
+            ->get();
+
+        abort_if($records->isEmpty(), 404);
+
+        $pdf = Pdf::loadView('admin.reports.checked-equipment-pdf', [
+            'records' => $records,
+            'checklistItems' => $this->checklistItems(),
+            'softwareItems' => $this->softwareItems(),
+        ])->setPaper([0, 0, 612, 936], 'landscape');
+
+        return $pdf->stream('maintenance-checklists-selected-' . now()->format('Y-m-d-His') . '.pdf');
+    }
+
+    public function checklist(Request $request)
+    {
+        $devices = $this->filteredAssetsQuery($request)
+            ->orderBy('property_number')
+            ->get();
+
+        return view('admin.reports.checklist', array_merge([
+            'devices' => $devices,
+            'selectedTypeId' => $request->integer('type_id'),
+            'selectedLocationId' => ($request->integer('location_id') ?: $request->integer('college_id')),
+            'selectedCollegeId' => ($request->integer('location_id') ?: $request->integer('college_id')), // backward-compatible variable for existing report views,
+            'selectedOfficeId' => $request->integer('office_id'),
+            'q' => $request->string('q')->toString(),
+            'generatedAt' => now(),
+        ], $this->filterOptions(($request->integer('location_id') ?: $request->integer('college_id')) ?: null)));
+    }
+
+    private function checkedEquipmentQuery(Request $request)
+    {
+        $checkerId = $request->integer('checker_id') ?: $request->integer('admin_id') ?: null;
+        $typeId = $request->integer('type_id') ?: null;
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
+        $q = $request->string('q')->toString();
+
+        return DeviceMaintenanceRecord::query()
+            ->with([
+                'device.type',
+                'device.currentAssignment.staff.office.location',
+                'checkedBy',
+            ])
+            ->whereNotNull('checked_by')
+            ->when($checkerId, fn ($query) => $query->where('checked_by', $checkerId))
             ->when($typeId, function ($query) use ($typeId) {
                 $query->whereHas('device', fn ($deviceQuery) => $deviceQuery->where('device_type_id', $typeId));
             })
@@ -102,66 +215,26 @@ class ReportController extends Controller
                                 ->orWhere('model', 'like', "%{$q}%");
                         });
                 });
-            })
-            ->orderByDesc('maintenance_date')
-            ->orderByDesc('id')
-            ->paginate(25)
-            ->withQueryString();
-
-        $adminSummary = DeviceMaintenanceRecord::query()
-            ->selectRaw('checked_by, COUNT(*) as total')
-            ->whereHas('checkedBy', fn ($query) => $query->where('role', 'admin'))
-            ->with('checkedBy')
-            ->groupBy('checked_by')
-            ->orderByDesc('total')
-            ->get();
-
-        return view('admin.reports.checked-equipment', [
-            'records' => $records,
-            'adminSummary' => $adminSummary,
-            'adminUsers' => User::where('role', 'admin')->orderBy('name')->get(),
-            'types' => DeviceType::orderBy('name')->get(),
-            'adminId' => $adminId,
-            'typeId' => $typeId,
-            'dateFrom' => $dateFrom,
-            'dateTo' => $dateTo,
-            'q' => $q,
-        ]);
-    }
-
-    public function checklist(Request $request)
-    {
-        $devices = $this->filteredAssetsQuery($request)
-            ->orderBy('property_number')
-            ->get();
-
-        return view('admin.reports.checklist', array_merge([
-            'devices' => $devices,
-            'selectedTypeId' => $request->integer('type_id'),
-            'selectedCollegeId' => $request->integer('college_id'),
-            'selectedOfficeId' => $request->integer('office_id'),
-            'q' => $request->string('q')->toString(),
-            'generatedAt' => now(),
-        ], $this->filterOptions()));
+            });
     }
 
     private function filteredAssetsQuery(Request $request)
     {
         $typeId = $request->integer('type_id') ?: null;
-        $collegeId = $request->integer('college_id') ?: null;
+        $locationId = ($request->integer('location_id') ?: $request->integer('college_id')) ?: null;
         $officeId = $request->integer('office_id') ?: null;
         $q = $request->string('q')->toString();
 
         return Device::query()
             ->with([
                 'type',
-                'currentAssignment.staff.office.college',
+                'currentAssignment.staff.office.location',
                 'latestMaintenanceRecord.checkedBy',
             ])
             ->when($typeId, fn ($query) => $query->where('device_type_id', $typeId))
-            ->when($collegeId, function ($query) use ($collegeId) {
-                $query->whereHas('currentAssignment.staff.office', function ($officeQuery) use ($collegeId) {
-                    $officeQuery->where('college_id', $collegeId);
+            ->when($locationId, function ($query) use ($locationId) {
+                $query->whereHas('currentAssignment.staff.office', function ($officeQuery) use ($locationId) {
+                    $officeQuery->where('location_id', $locationId);
                 });
             })
             ->when($officeId, function ($query) use ($officeId) {
@@ -181,12 +254,54 @@ class ReportController extends Controller
             });
     }
 
-    private function filterOptions(): array
+    private function filterOptions(?int $locationId = null): array
     {
         return [
             'types' => DeviceType::orderBy('name')->get(),
-            'colleges' => College::orderBy('name')->get(),
-            'offices' => Office::with('college')->orderBy('name')->get(),
+            'locations' => Location::orderBy('name')->get(),
+            'colleges' => Location::orderBy('name')->get(), // backward-compatible variable for existing report views,
+            'offices' => Office::with('location')
+                ->when($locationId, fn ($query) => $query->where('location_id', $locationId))
+                ->orderBy('name')
+                ->get(),
+        ];
+    }
+
+    private function checklistItems(): array
+    {
+        return [
+            'system_unit_power_on' => [
+                'group' => 'System Unit',
+                'label' => 'Check for<br>power on',
+            ],
+            'monitor_display' => [
+                'group' => 'Monitor',
+                'label' => 'Check<br>display',
+            ],
+            'keyboard_keys' => [
+                'group' => 'Keyboard',
+                'label' => 'Check for<br>keys',
+            ],
+            'mouse_buttons' => [
+                'group' => 'Mouse',
+                'label' => 'Check<br>mouse<br>left/right<br>buttons',
+            ],
+            'avr_ups_power_recovery' => [
+                'group' => 'AVR/UPS',
+                'label' => 'Check for<br>power<br>recovery',
+            ],
+            'printer_printout' => [
+                'group' => 'Printer',
+                'label' => 'Check<br>printout',
+            ],
+        ];
+    }
+
+    private function softwareItems(): array
+    {
+        return [
+            'setup_antivirus' => 'Setup Anti-Virus',
+            'system_scan_removal' => 'System Scan and Removal of Malicious Software',
         ];
     }
 }

@@ -139,11 +139,30 @@ class ActivityLog extends Model
         return $changes['items'] ?? [];
     }
 
+    /**
+     * Legacy record/subject type names, mapped to their current name.
+     * Add an entry here whenever a record type is renamed, so that old
+     * activity log rows keep displaying and filtering correctly under
+     * the new name instead of fragmenting into a separate entry.
+     */
+    public const TYPE_ALIASES = [
+        'College' => 'Location',
+    ];
+
+    public static function canonicalType(?string $type): ?string
+    {
+        if ($type === null) {
+            return null;
+        }
+
+        return self::TYPE_ALIASES[$type] ?? $type;
+    }
+
     public function getBulkRecordTypeAttribute(): ?string
     {
         $changes = $this->getAttribute('changes') ?? [];
 
-        return $changes['record_type'] ?? null;
+        return self::canonicalType($changes['record_type'] ?? null);
     }
 
     /**

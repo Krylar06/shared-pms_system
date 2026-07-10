@@ -2,6 +2,13 @@
 
 @section('title', 'Device Details')
 @section('page_title', 'Device Details')
+@section('breadcrumbs')
+    <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</a>
+    <span>/</span>
+    <a href="{{ route('admin.devices.index') }}" class="hover:text-blue-600 dark:hover:text-blue-400">Equipment Manager</a>
+    <span>/</span>
+    <span class="font-medium text-gray-800 dark:text-gray-100">Device Details</span>
+@endsection
 
 @section('content')
     @php
@@ -11,29 +18,71 @@
         $deviceUrl = route('admin.devices.show', $device);
     @endphp
 
-    <div x-data="{
+<script>
+    window.deviceDetailsPage = function () {
+        return {
             editOpen: false,
             selectedTypeId: @json(old('device_type_id', $device->device_type_id)),
-
             typeNames: @json($types->pluck('name', 'id')),
-            getTypeName(typeId) {
+
+            getTypeName: function (typeId) {
                 return (this.typeNames[typeId] || '').toLowerCase();
             },
 
-            isDesktopType(typeId = null) {
-        let selected = typeId ?? this.selectedTypeId;
-        let name = this.getTypeName(selected);
+            isComputerType: function (typeId) {
+                var selected = typeId || this.selectedTypeId;
+                var name = this.getTypeName(selected);
 
-        return name === 'desktop';
-    },
+                return name === 'desktop' || name === 'laptop';
+            },
 
-            isComputerType(typeId = null) {
-        let selected = typeId ?? this.selectedTypeId;
-        let name = this.getTypeName(selected);
+            isDesktopType: function (typeId) {
+                var selected = typeId || this.selectedTypeId;
 
-        return name === 'desktop' || name === 'laptop';
-    }
-        }" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                return this.getTypeName(selected) === 'desktop';
+            },
+
+            formatUnitPriceValue: function (value) {
+                value = String(value || '').replace(/[^0-9.]/g, '');
+
+                var parts = value.split('.');
+                var whole = parts.shift() || '';
+                var decimals = parts.length ? '.' + parts.join('').slice(0, 2) : '';
+
+                whole = whole.replace(/^0+(?=\d)/, '');
+                whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                return whole + decimals;
+            },
+
+            formatUnitPriceInput: function (event) {
+                event.target.value = this.formatUnitPriceValue(event.target.value);
+            },
+
+            cleanUnitPrices: function (form) {
+                form.querySelectorAll('.unit-price-input').forEach(function (input) {
+                    input.value = String(input.value || '').replace(/,/g, '');
+                });
+            },
+
+            initUnitPrices: function (root) {
+                var self = this;
+
+                this.$nextTick(function () {
+                    root.querySelectorAll('.unit-price-input').forEach(function (input) {
+                        input.value = self.formatUnitPriceValue(input.value);
+                    });
+                });
+            }
+        };
+    };
+</script>
+
+<div
+    x-data="deviceDetailsPage()"
+    x-init="initUnitPrices($el)"
+    class="grid grid-cols-1 gap-6 lg:grid-cols-3"
+>
         <div class="lg:col-span-2">
             <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div class="flex items-start justify-between gap-4">
@@ -58,25 +107,28 @@
                             History
                         </a>
 
-                        <form method="POST" action="{{ route('admin.devices.markChecked', $device) }}"
-                            onsubmit="return confirm('Mark this device as checked/maintained today?')">
-                            @csrf
-                            @method('PATCH')
+                        <a
+                            href="{{ route('admin.devices.checklist.form', $device) }}"
+                            class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                        >
+                            Mark as Checked
+                        </a>
 
-                            <button type="submit"
-                                class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
-                                Mark as Checked
-                            </button>
-                        </form>
-
-                        <button type="button" x-on:click="editOpen = true"
-                            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                        <button
+                            id="open-edit-device-modal"
+                            type="button"
+                            x-on:click="editOpen = true"
+                            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        >
                             Edit
                         </button>
 
                         @if(auth()->user()->isAdmin())
-                            <form method="POST" action="{{ route('admin.devices.destroy', $device) }}"
-                                onsubmit="return confirm('Delete this device?')">
+                            <form
+                                method="POST"
+                                action="{{ route('admin.devices.destroy', $device) }}"
+                                onsubmit="return confirm('Delete this device?')"
+                            >
                                 @csrf
                                 @method('DELETE')
 
@@ -275,7 +327,7 @@
 
         {{-- EDIT MODAL --}}
         <x-modal show="editOpen" title="Edit Device">
-            <form method="POST" action="{{ route('admin.devices.update', $device) }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.devices.update', $device) }}" class="space-y-4" x-on:submit="cleanUnitPrices($event.target)">
                 @csrf
                 @method('PUT')
 
@@ -357,10 +409,18 @@
 
                     <div x-show="isDesktopType()" x-cloak>
                         <label class="text-sm font-medium">Form Factor</label>
-                        <input name="specs[form_factor]"
-                            value="{{ old('specs.form_factor', data_get($device->specs, 'form_factor')) }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2" maxlength="50"
-                            :disabled="!isDesktopType()">
+                        <select
+                            name="specs[form_factor]"
+                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            :disabled="!isDesktopType()"
+                        >
+                            <option value="">-- Select Form Factor --</option>
+                            <option value="Tower Desktops" @selected(old('specs.form_factor', data_get($device->specs, 'form_factor')) === 'Tower Desktops')>Tower Desktops</option>
+                            <option value="Small Form Factor (SFF) Desktops" @selected(old('specs.form_factor', data_get($device->specs, 'form_factor')) === 'Small Form Factor (SFF) Desktops')>Small Form Factor (SFF) Desktops</option>
+                            <option value="All-in-One (AIO) Desktops" @selected(old('specs.form_factor', data_get($device->specs, 'form_factor')) === 'All-in-One (AIO) Desktops')>All-in-One (AIO) Desktops</option>
+                            <option value="Mini PCs" @selected(old('specs.form_factor', data_get($device->specs, 'form_factor')) === 'Mini PCs')>Mini PCs</option>
+                            <option value="Workstations" @selected(old('specs.form_factor', data_get($device->specs, 'form_factor')) === 'Workstations')>Workstations</option>
+                        </select>
                     </div>
 
                     {{-- OS Version --}}
@@ -415,9 +475,11 @@
 
                     <div>
                         <label class="text-sm font-medium">Unit Price</label>
-                        <input name="unit_price" type="number" step="0.01" min="0" max="9999999999.99"
+                        <input name="unit_price" type="text" inputmode="decimal"
                             value="{{ old('unit_price', $device->unit_price) }}"
-                            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2">
+                            placeholder="e.g. 25,000.00"
+                            class="unit-price-input mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                            x-on:input="formatUnitPriceInput($event)">
                     </div>
 
                     <div>

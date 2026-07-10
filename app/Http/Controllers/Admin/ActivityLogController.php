@@ -8,6 +8,21 @@ use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
 {
+    /**
+     * Every legacy name that should be treated as the given canonical type
+     * when filtering, so a renamed record type (e.g. College -> Location)
+     * still matches its old log rows.
+     */
+    private function typesMatching(string $canonical): array
+    {
+        $legacy = array_keys(array_filter(
+            ActivityLog::TYPE_ALIASES,
+            fn ($current) => $current === $canonical
+        ));
+
+        return array_values(array_unique([$canonical, ...$legacy]));
+    }
+
     public function index(Request $request)
     {
         $query = ActivityLog::query()->latest();
@@ -28,13 +43,16 @@ class ActivityLogController extends Controller
         $subjectType = $request->query('subject_type');
 
         if ($subjectType) {
-            $query->where(function ($q) use ($subjectType) {
+            $matchTypes = $this->typesMatching($subjectType);
 
+            $query->where(function ($q) use ($matchTypes) {
                 // Normal logs
-                $q->where('subject_type', $subjectType);
+                $q->whereIn('subject_type', $matchTypes);
 
                 // Bulk logs
-                $q->orWhere('changes->record_type', $subjectType);
+                foreach ($matchTypes as $type) {
+                    $q->orWhere('changes->record_type', $type);
+                }
             });
         }
 
@@ -56,7 +74,10 @@ class ActivityLogController extends Controller
 
         } else {
 
-            // Same — only non-null subject types that exist.
+            // Same — only non-null subject types that exist. Legacy names
+            // (e.g. "College") are canonicalized to their current name
+            // (e.g. "Location") so they appear as a single option instead
+            // of fragmenting into two.
             $subjectTypes = ActivityLog::all()
                 ->flatMap(function ($log) {
                     return array_filter([
@@ -64,6 +85,7 @@ class ActivityLogController extends Controller
                         data_get($log->changes, 'record_type'),
                     ]);
                 })
+                ->map(fn ($type) => ActivityLog::canonicalType($type))
                 ->unique()
                 ->sort()
                 ->values();

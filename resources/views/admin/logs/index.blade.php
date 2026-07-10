@@ -4,6 +4,7 @@
 @section('page_title', 'Activity Logs')
 
 @section('content')
+<div class="space-y-5">
 
     @php
         $chipClass = fn($action) => match ($action) {
@@ -150,6 +151,7 @@
 
         {{-- Header --}}
         <div>
+
             <h1 class="text-2xl font-semibold">Activity Logs</h1>
             <p class="text-sm text-gray-500">
                 Audit trail of system actions.
@@ -319,6 +321,7 @@
 
                             <td class="px-4 py-3 break-all max-w-0">
                                 {{ $log->description }}
+
                             </td>
 
                             <td class="px-4 py-3 text-right text-sm text-gray-700">
@@ -594,6 +597,8 @@
 
     <div class="mt-6">
     <x-activity-pagination :paginator="$logs" />
+</div>
+
 </div>
 
 @endsection

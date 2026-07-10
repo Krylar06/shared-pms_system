@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
-use App\Models\College;
+use App\Models\Location;
 use App\Models\Office;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,11 +15,11 @@ class OfficeController extends Controller
 
     private function buildSummary(Office $office): array
     {
-        $office->loadMissing('college');
+        $office->loadMissing('location');
 
         return [
             'office' => $office->name,
-            'college' => optional($office->college)->name,
+            'location' => optional($office->location)->name,
         ];
     }
 
@@ -38,13 +38,13 @@ class OfficeController extends Controller
         return $this->buildSummary($office);
     }
 
-    public function index(College $college)
+    public function index(Location $location)
     {
-        $offices = Office::where('college_id', $college->id)->orderBy('name')->paginate(15);
-        return view('admin.offices.index', compact('college', 'offices'));
+        $offices = Office::where('location_id', $location->id)->orderBy('name')->paginate(15);
+        return view('admin.offices.index', ['location' => $location, 'college' => $location, 'offices' => $offices]);
     }
 
-    public function store(Request $request, College $college)
+    public function store(Request $request, Location $location)
     {
         // Single add OR bulk add (array of names)
         $isBulk = $request->has('names');
@@ -60,7 +60,7 @@ class OfficeController extends Controller
                     'string',
                     'max:150',
                     'regex:' . self::NAME_REGEX,
-                    Rule::unique('offices', 'name')->where('college_id', $college->id),
+                    Rule::unique('offices', 'name')->where('location_id', $location->id),
                     // Rule::unique only checks the DB, so two identical office
                     // names submitted together in the same batch would both
                     // pass validation and the second insert would throw an
@@ -85,7 +85,7 @@ class OfficeController extends Controller
                 'names.*.string' => 'The office name must be text.',
                 'names.*.max' => 'The office name may not be longer than 150 characters.',
                 'names.*.regex' => 'The office name contains invalid characters.',
-                'names.*.unique' => 'This office name already exists in this college.',
+                'names.*.unique' => 'This office name already exists in this location.',
             ], [
                 'names.*' => 'office name',
             ]);
@@ -95,7 +95,7 @@ class OfficeController extends Controller
             foreach (range(0, $count - 1) as $i) {
 
                 $office = Office::create([
-                    'college_id' => $college->id,
+                    'location_id' => $location->id,
                     'name' => $data['names'][$i],
                 ]);
 
@@ -125,15 +125,15 @@ class OfficeController extends Controller
                 'string',
                 'max:150',
                 'regex:' . self::NAME_REGEX,
-                Rule::unique('offices', 'name')->where('college_id', $college->id),
+                Rule::unique('offices', 'name')->where('location_id', $location->id),
             ],
         ], [
             'name.regex' => 'The office name contains invalid characters.',
-            'name.unique' => 'This office name already exists in this college.',
+            'name.unique' => 'This office name already exists in this location.',
         ]);
 
         $office = Office::create([
-            'college_id' => $college->id,
+            'location_id' => $location->id,
             'name' => $data['name'],
         ]);
 
@@ -149,15 +149,15 @@ class OfficeController extends Controller
         return back()->with('success', 'Office created.');
     }
 
-    public function edit(College $college, Office $office)
+    public function edit(Location $location, Office $office)
     {
-        abort_unless($office->college_id === $college->id, 404);
-        return view('admin.offices.edit', compact('college', 'office'));
+        abort_unless($office->location_id === $location->id, 404);
+        return view('admin.offices.edit', ['location' => $location, 'college' => $location, 'office' => $office]);
     }
 
-    public function update(Request $request, College $college, Office $office)
+    public function update(Request $request, Location $location, Office $office)
     {
-        abort_unless($office->college_id === $college->id, 404);
+        abort_unless($office->location_id === $location->id, 404);
 
         $data = $request->validateWithBag('edit', [
             'name' => [
@@ -165,17 +165,17 @@ class OfficeController extends Controller
                 'string',
                 'max:150',
                 'regex:' . self::NAME_REGEX,
-                Rule::unique('offices', 'name')->where('college_id', $college->id)->ignore($office->id),
+                Rule::unique('offices', 'name')->where('location_id', $location->id)->ignore($office->id),
             ],
         ], [
             'name.regex' => 'The office name contains invalid characters.',
-            'name.unique' => 'This office name already exists in this college.',
+            'name.unique' => 'This office name already exists in this location.',
         ]);
 
         $before = [
-    'office' => $office->name,
-    'college' => optional($office->college)->name,
-];
+            'office' => $office->name,
+            'location' => optional($office->location)->name,
+        ];
 
         $office->update($data);
 
@@ -186,21 +186,21 @@ class OfficeController extends Controller
             ActivityLog::makePayload(
                 $this->buildUpdateSummary($office),
                 ActivityLog::buildChanges(
-    $before,
-    [
-        'office' => $office->name,
-        'college' => optional($office->college)->name,
-    ]
-)
+                    $before,
+                    [
+                        'office' => $office->name,
+                        'location' => optional($office->location)->name,
+                    ]
+                )
             )
         );
 
-        return redirect()->route('admin.offices.index', $college)->with('success', 'Office updated.');
+        return redirect()->route('admin.offices.index', $location)->with('success', 'Office updated.');
     }
 
-    public function destroy(College $college, Office $office)
+    public function destroy(Location $location, Office $office)
     {
-        abort_unless($office->college_id === $college->id, 404);
+        abort_unless($office->location_id === $location->id, 404);
         $name = $office->name;
         $summary = $this->buildDeleteSummary($office);
 
@@ -212,7 +212,6 @@ class OfficeController extends Controller
         );
 
         $office->delete();
-
 
         return back()->with('success', 'Office deleted.');
     }

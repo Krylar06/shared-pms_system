@@ -1,442 +1,287 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Issued Devices')
-@section('page_title', 'Issued Devices')
+@section('title', 'Staff Devices')
+@section('page_title', 'Staff Devices')
 
 @section('content')
-<div
-    x-data="{
-        issueOpen: {{ $errors->has('device_id') ? 'true' : 'false' }},
-        editOpen: false,
-        deleteOpen: false,
+@php
+    $assignments = $assignments ?? collect();
+    $availableDevices = $availableDevices ?? collect();
 
-        deviceSearch: '',
-        selectedDevice: null,
+    $staffName = trim(($staff->first_name ?? '') . ' ' . ($staff->last_name ?? ''));
+    $staffName = $staffName !== '' ? $staffName : ($staff->name ?? 'Staff');
 
-        availableDevices: @js(
-            $availableDevices->map(function ($device) {
-                return [
-                    'id' => $device->id,
-                    'type' => $device->type?->name ?? 'Device',
-                    'property_number' => $device->property_number,
-                    'brand' => $device->brand,
-                    'model' => $device->model,
-                    'status' => $device->status,
-                ];
-            })->values()
-        ),
+    $office = $staff->office ?? null;
+    $college = $office?->college;
 
-        editDevice: {
-            id: null,
-            device_type_id: '',
-            type_name: '',
-            property_number: '',
-            brand: '',
-            model: '',
-            mac_address: '',
-            unit_price: '',
-            date_acquired: '',
-            last_maintenance_date: '',
-            maintenance_remarks: '',
-            status: '',
-            notes: '',
-            specs: {}
-        },
-
-        deleteDeviceId: null,
-
-        filteredDevices() {
-            let search = this.deviceSearch.toLowerCase().trim();
-
-            let devices = this.availableDevices.filter(device => {
-                return device.status === 'available';
-            });
-
-            if (!search) {
-                return devices.slice(0, 8);
-            }
-
-            return devices.filter(device => {
-                return [
-                    device.type,
-                    device.property_number,
-                    device.brand,
-                    device.model
-                ].filter(Boolean).join(' ').toLowerCase().includes(search);
-            }).slice(0, 10);
-        },
-
-        selectDevice(device) {
-            this.selectedDevice = device;
-            this.deviceSearch = `${device.type} - ${device.property_number} - ${device.brand ?? ''} ${device.model ?? ''}`.trim();
-        },
-
-        clearSelectedDevice() {
-            this.selectedDevice = null;
-            this.deviceSearch = '';
-        },
-
-        openIssueModal() {
-            this.issueOpen = true;
-            this.deviceSearch = '';
-            this.selectedDevice = null;
-        },
-
-        isComputerType(typeName) {
-            return ['desktop', 'laptop'].includes(String(typeName || '').toLowerCase());
-        },
-
-        openEdit(device) {
-            device.specs = device.specs ?? {};
-            device.specs.os = device.specs.os ?? '';
-
-            this.editDevice = device;
-            this.editOpen = true;
-        },
-
-        openDelete(id) {
-            this.deleteDeviceId = id;
-            this.deleteOpen = true;
-            this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
+    $deviceLabel = function ($device) {
+        if (! $device) {
+            return 'Unknown device';
         }
-    }"
-    class="space-y-5"
->
-    {{-- Breadcrumb --}}
-    <div class="text-sm text-gray-500 leading-6 break-words">
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.colleges.index') }}">
-            Colleges
-        </a>
 
-        <span class="mx-1">/</span>
+        $parts = array_filter([
+            $device->type?->name ?? 'Device',
+            $device->property_number ? 'Property #: ' . $device->property_number : null,
+            $device->serial_number ? 'Serial #: ' . $device->serial_number : null,
+            trim(($device->brand ?? '') . ' ' . ($device->model ?? '')) ?: null,
+        ]);
 
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.offices.index', $staff->office->college) }}">
-            {{ $staff->office->college->name }}
-        </a>
+        return implode(' | ', $parts);
+    };
+@endphp
 
-        <span class="mx-1">/</span>
-
-        <a class="text-blue-600 hover:underline" href="{{ route('admin.staff.index', $staff->office) }}">
-            {{ $staff->office->name }}
-        </a>
-
-        <span class="mx-1">/</span>
-
-        <span class="font-medium text-gray-700">
-            {{ $staff->last_name }}, {{ $staff->first_name }}
-        </span>
-
-        <span class="mx-1">/</span>
-
-        <span>Issued Devices</span>
-    </div>
-
-    {{-- Header --}}
-    <div class="flex items-start justify-between gap-3">
+<div class="space-y-5">
+    {{-- Page Header --}}
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">
-                Issued Devices
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+                Devices Assigned to {{ $staffName }}
             </h1>
+
+            <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ $office?->name ?? 'No office assigned' }}
+                @if($college)
+                    <span class="mx-1">•</span>{{ $college->name }}
+                @endif
+            </div>
         </div>
 
-        <button
-            type="button"
-            class="shrink-0 inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-            @click="openIssueModal()"
-        >
-            + Issue Device
-        </button>
+        <div class="flex flex-wrap gap-2">
+            @if($office)
+                <a
+                    href="{{ route('admin.staff.index', $office) }}"
+                    class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Back to Staff
+                </a>
+            @endif
+
+            <a
+                href="{{ route('admin.devices.index') }}"
+                class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            >
+                Device Manager
+            </a>
+        </div>
     </div>
 
-    @if(session('info'))
-        <div class="rounded-xl bg-blue-100 px-4 py-3 text-sm text-blue-700">
-            {{ session('info') }}
+    {{-- Alerts --}}
+    @if(session('success'))
+        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400">
+            {{ session('success') }}
         </div>
     @endif
 
-    {{-- Mobile cards --}}
-    <div class="grid grid-cols-1 gap-3 md:hidden">
-        @forelse($issued as $assignment)
-            @php
-                $dev = $assignment->device;
-                $typeName = $dev?->type?->name ?? 'Device';
-                $isComputer = in_array(strtolower($typeName), ['desktop', 'laptop']);
-            @endphp
+    @if(session('error'))
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
+            {{ session('error') }}
+        </div>
+    @endif
 
-            @if($dev)
-                <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <div class="space-y-3">
-                        <div>
-                            <div class="text-xs font-medium uppercase text-gray-500">
-                                {{ $typeName }}
-                            </div>
+    @if($errors->any())
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
+            <div class="font-semibold">Please check the form.</div>
+            <ul class="mt-1 list-inside list-disc">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-                            <a
-                                href="{{ route('admin.devices.show', $dev) }}"
-                                class="mt-1 block text-base font-semibold text-blue-600 hover:underline"
-                            >
-                                {{ $dev->property_number }}
-                            </a>
+    {{-- Staff Summary + Issue Form --}}
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 xl:col-span-1">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Staff Information</h2>
 
-                            <div class="mt-1 text-sm text-gray-600">
-                                {{ $dev->brand ?: '-' }}
-                                @if($dev->model)
-                                    • {{ $dev->model }}
-                                @endif
-                            </div>
-                        </div>
+            <dl class="mt-4 space-y-3 text-sm">
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">Name</dt>
+                    <dd class="font-medium text-gray-900 dark:text-white">{{ $staffName }}</dd>
+                </div>
 
-                        @if($isComputer && $dev->mac_address)
-                            <div>
-                                <div class="text-xs text-gray-500">MAC Address</div>
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ $dev->mac_address }}
-                                </div>
-                            </div>
-                        @endif
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">Position</dt>
+                    <dd class="text-gray-900 dark:text-white">{{ $staff->position ?: '-' }}</dd>
+                </div>
 
-                        <div>
-                            <div class="text-xs text-gray-500">Issued At</div>
-                            <div class="text-sm font-medium text-gray-900">
-                                {{ $assignment->issued_at ? $assignment->issued_at->format('Y-m-d H:i') : '-' }}
-                            </div>
-                        </div>
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">Office</dt>
+                    <dd class="text-gray-900 dark:text-white">{{ $office?->name ?? '-' }}</dd>
+                </div>
 
-                        <div>
-                            <div class="text-xs text-gray-500">Last Maintenance</div>
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">College</dt>
+                    <dd class="text-gray-900 dark:text-white">{{ $college?->name ?? '-' }}</dd>
+                </div>
 
-                            @if($dev->last_maintenance_date)
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ $dev->last_maintenance_date->format('M d, Y') }}
-                                </div>
+                <div>
+                    <dt class="text-gray-500 dark:text-gray-400">Currently Issued</dt>
+                    <dd class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $assignments->count() }}</dd>
+                </div>
+            </dl>
+        </div>
 
-                                @if($dev->maintenance_remarks)
-                                    <div class="text-xs text-gray-500">
-                                        {{ $dev->maintenance_remarks }}
-                                    </div>
-                                @endif
-                            @else
-                                <div class="text-sm text-gray-400">
-                                    Not yet checked
-                                </div>
-                            @endif
-                        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 xl:col-span-2">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Issue Device</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Select an available device to assign to this staff member.
+            </p>
 
-                        <div class="flex flex-wrap gap-2 pt-2">
-                            <form method="POST" action="{{ route('admin.staff.devices.return', [$staff, $assignment]) }}">
-                                @csrf
+            <form method="POST" action="{{ route('admin.staff.devices.issue', $staff) }}" class="mt-4 space-y-4">
+                @csrf
 
-                                <button
-                                    type="submit"
-                                    onclick="return confirm('Return this device?')"
-                                    class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
-                                >
-                                    Return
-                                </button>
-                            </form>
+                <div>
+                    <label for="device_id" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Available Device
+                    </label>
 
-                            <form method="POST" action="{{ route('admin.devices.markChecked', $dev) }}">
-                                @csrf
-                                @method('PATCH')
+                    <select
+                        id="device_id"
+                        name="device_id"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-900/30"
+                        required
+                    >
+                        <option value="">-- Select device --</option>
 
-                                <button
-                                    type="submit"
-                                    class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
-                                >
-                                    Mark Checked
-                                </button>
-                            </form>
+                        @foreach($availableDevices as $device)
+                            <option value="{{ $device->id }}" @selected(old('device_id') == $device->id)>
+                                {{ $deviceLabel($device) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                            <a
-                                href="{{ route('admin.devices.history', $dev) }}"
-                                class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
-                            >
-                                History
-                            </a>
+                <div>
+                    <label for="remarks" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Remarks <span class="font-normal text-gray-400">(optional)</span>
+                    </label>
 
-                            <button
-                                type="button"
-                                class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-                                @click="openEdit({
-                                    id: {{ $dev->id }},
-                                    device_type_id: @js($dev->device_type_id),
-                                    type_name: @js($typeName),
-                                    property_number: @js($dev->property_number),
-                                    brand: @js($dev->brand ?? ''),
-                                    model: @js($dev->model ?? ''),
-                                    mac_address: @js($dev->mac_address ?? ''),
-                                    unit_price: @js($dev->unit_price ?? ''),
-                                    date_acquired: @js($dev->date_acquired ? $dev->date_acquired->format('Y-m-d') : ''),
-                                    last_maintenance_date: @js($dev->last_maintenance_date ? $dev->last_maintenance_date->format('Y-m-d') : ''),
-                                    maintenance_remarks: @js($dev->maintenance_remarks ?? ''),
-                                    status: @js($dev->status ?? ''),
-                                    notes: @js($dev->notes ?? ''),
-                                    specs: @js(['os' => data_get($dev->specs, 'os', '')])
-                                })"
-                            >
-                                Edit
-                            </button>
+                    <textarea
+                        id="remarks"
+                        name="remarks"
+                        rows="3"
+                        maxlength="1000"
+                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-900/30"
+                        placeholder="Example: Issued for office use"
+                    >{{ old('remarks') }}</textarea>
+                </div>
 
-                            @if(auth()->user()->isAdmin())
-                                <button
-                                    type="button"
-                                    class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                    @click="openDelete({{ $dev->id }})"
-                                >
-                                    Delete
-                                </button>
-                            @endif
-                        </div>
-                    </div>
+                <div>
+                    <button
+                        type="submit"
+                        class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-500 dark:hover:bg-blue-600"
+                        @disabled($availableDevices->isEmpty())
+                    >
+                        Issue Device
+                    </button>
+                </div>
+            </form>
+
+            @if($availableDevices->isEmpty())
+                <div class="mt-4 rounded-xl bg-yellow-50 px-4 py-3 text-sm text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+                    No available devices can be issued right now.
                 </div>
             @endif
-        @empty
-            <div class="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-500">
-                No issued devices.
-            </div>
-        @endforelse
+        </div>
     </div>
 
-    {{-- Desktop table --}}
-    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block">
+    {{-- Assigned Devices --}}
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+            <div>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Currently Assigned Devices</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Active devices assigned to this staff member.
+                </p>
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="min-w-full text-left text-sm">
-                <thead class="border-b border-gray-200 bg-gray-50">
+                <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/40 dark:text-gray-400">
                     <tr>
-                        <th class="px-4 py-3 font-semibold text-gray-700">Type</th>
-                        <th class="px-4 py-3 font-semibold text-gray-700">Property #</th>
-                        <th class="px-4 py-3 font-semibold text-gray-700">Brand</th>
-                        <th class="px-4 py-3 font-semibold text-gray-700">MAC</th>
-                        <th class="px-4 py-3 font-semibold text-gray-700">Issued At</th>
-                        <th class="px-4 py-3 font-semibold text-gray-700">Last Maintenance</th>
-                        <th class="px-4 py-3 font-semibold text-gray-700">Actions</th>
+                        <th class="px-5 py-3 font-semibold">Device</th>
+                        <th class="px-5 py-3 font-semibold">Property #</th>
+                        <th class="px-5 py-3 font-semibold">Serial #</th>
+                        <th class="px-5 py-3 font-semibold">Condition</th>
+                        <th class="px-5 py-3 font-semibold">Issued Date</th>
+                        <th class="px-5 py-3 font-semibold">Remarks</th>
+                        <th class="px-5 py-3 font-semibold">Action</th>
                     </tr>
                 </thead>
 
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($issued as $assignment)
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse($assignments as $assignment)
                         @php
-                            $dev = $assignment->device;
-                            $typeName = $dev?->type?->name ?? 'Device';
-                            $isComputer = in_array(strtolower($typeName), ['desktop', 'laptop']);
+                            $device = $assignment->device;
+                            $brandModel = trim(($device?->brand ?? '') . ' ' . ($device?->model ?? ''));
                         @endphp
 
-                        @if($dev)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-gray-900">
-                                    {{ $typeName }}
-                                </td>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                            <td class="px-5 py-4">
+                                <div class="font-medium text-gray-900 dark:text-white">
+                                    {{ $device?->type?->name ?? 'Device' }}
+                                </div>
 
-                                <td class="px-4 py-3">
-                                    <a
-                                        href="{{ route('admin.devices.show', $dev) }}"
-                                        class="font-medium text-blue-600 hover:underline"
-                                    >
-                                        {{ $dev->property_number }}
-                                    </a>
-                                </td>
+                                @if($brandModel !== '')
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ $brandModel }}
+                                    </div>
+                                @endif
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700">
-                                    {{ $dev->brand ?: '-' }}
-                                </td>
+                            <td class="px-5 py-4 text-gray-700 dark:text-gray-300">
+                                {{ $device?->property_number ?? '-' }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700">
-                                    {{ $isComputer ? ($dev->mac_address ?: '-') : '-' }}
-                                </td>
+                            <td class="px-5 py-4 text-gray-700 dark:text-gray-300">
+                                {{ $device?->serial_number ?: '-' }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700">
-                                    {{ $assignment->issued_at ? $assignment->issued_at->format('Y-m-d H:i') : '-' }}
-                                </td>
+                            <td class="px-5 py-4 capitalize text-gray-700 dark:text-gray-300">
+                                {{ $device?->condition ?? 'serviceable' }}
+                            </td>
 
-                                <td class="px-4 py-3 text-gray-700">
-                                    @if($dev->last_maintenance_date)
-                                        <div class="font-medium text-gray-900">
-                                            {{ $dev->last_maintenance_date->format('M d, Y') }}
-                                        </div>
+                            <td class="px-5 py-4 text-gray-700 dark:text-gray-300">
+                                {{ $assignment->issued_at ? $assignment->issued_at->format('M d, Y') : '-' }}
+                            </td>
 
-                                        @if($dev->maintenance_remarks)
-                                            <div class="max-w-xs truncate text-xs text-gray-500">
-                                                {{ $dev->maintenance_remarks }}
-                                            </div>
-                                        @endif
-                                    @else
-                                        <span class="text-gray-400">Not yet checked</span>
-                                    @endif
-                                </td>
+                            <td class="px-5 py-4 text-gray-700 dark:text-gray-300">
+                                <div class="max-w-xs truncate">
+                                    {{ $assignment->remarks ?: '-' }}
+                                </div>
+                            </td>
 
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <form method="POST" action="{{ route('admin.staff.devices.return', [$staff, $assignment]) }}">
-                                            @csrf
-
-                                            <button
-                                                type="submit"
-                                                onclick="return confirm('Return this device?')"
-                                                class="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
-                                            >
-                                                Return
-                                            </button>
-                                        </form>
-
-                                        <form method="POST" action="{{ route('admin.devices.markChecked', $dev) }}">
-                                            @csrf
-                                            @method('PATCH')
-
-                                            <button
-                                                type="submit"
-                                                class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
-                                            >
-                                                Mark Checked
-                                            </button>
-                                        </form>
-
+                            <td class="px-5 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    @if($device)
                                         <a
-                                            href="{{ route('admin.devices.history', $dev) }}"
-                                            class="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
+                                            href="{{ route('admin.devices.show', $device) }}"
+                                            class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                                         >
-                                            History
+                                            View
                                         </a>
+                                    @endif
+
+                                    <form method="POST" action="{{ route('admin.staff.devices.return', [$staff, $assignment]) }}">
+                                        @csrf
 
                                         <button
-                                            type="button"
-                                            class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-                                            @click="openEdit({
-                                                id: {{ $dev->id }},
-                                                device_type_id: @js($dev->device_type_id),
-                                                type_name: @js($typeName),
-                                                property_number: @js($dev->property_number),
-                                                brand: @js($dev->brand ?? ''),
-                                                model: @js($dev->model ?? ''),
-                                                mac_address: @js($dev->mac_address ?? ''),
-                                                unit_price: @js($dev->unit_price ?? ''),
-                                                date_acquired: @js($dev->date_acquired ? $dev->date_acquired->format('Y-m-d') : ''),
-                                                last_maintenance_date: @js($dev->last_maintenance_date ? $dev->last_maintenance_date->format('Y-m-d') : ''),
-                                                maintenance_remarks: @js($dev->maintenance_remarks ?? ''),
-                                                status: @js($dev->status ?? ''),
-                                                notes: @js($dev->notes ?? ''),
-                                                specs: @js(['os' => data_get($dev->specs, 'os', '')])
-                                            })"
+                                            type="submit"
+                                            class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                                            onclick="return confirm('Return this device from {{ $staffName }}?')"
                                         >
-                                            Edit
+                                            Return
                                         </button>
-
-                                        @if(auth()->user()->isAdmin())
-                                            <button
-                                                type="button"
-                                                class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                                @click="openDelete({{ $dev->id }})"
-                                            >
-                                                Delete
-                                            </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                                No issued devices.
+                            <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                No devices are currently assigned to this staff member.
                             </td>
                         </tr>
                     @endforelse
@@ -444,338 +289,5 @@
             </table>
         </div>
     </div>
-
-    {{-- ISSUE MODAL --}}
-    <x-modal show="issueOpen" title="Issue a device to {{ $staff->first_name }}">
-        <form method="POST" action="{{ route('admin.staff.devices.issue', $staff) }}" class="space-y-4">
-            @csrf
-
-            <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">
-                    Available Devices
-                </label>
-
-                <input
-                    type="text"
-                    x-model="deviceSearch"
-                    @input="selectedDevice = null"
-                    placeholder="Search device type, property number, brand, or model..."
-                    class="w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-
-                <input
-                    type="hidden"
-                    name="device_id"
-                    :value="selectedDevice ? selectedDevice.id : ''"
-                >
-
-                @error('device_id')
-                    <p class="mt-1 text-sm text-red-600">
-                        {{ $message }}
-                    </p>
-                @enderror
-            </div>
-
-            <div
-                x-show="!selectedDevice"
-                class="max-h-64 overflow-y-auto rounded-lg border border-gray-200"
-            >
-                <template x-if="filteredDevices().length === 0">
-                    <div class="px-4 py-3 text-sm text-gray-500">
-                        No available devices found.
-                    </div>
-                </template>
-
-                <template x-for="device in filteredDevices()" :key="device.id">
-                    <button
-                        type="button"
-                        @click="selectDevice(device)"
-                        class="block w-full border-b border-gray-100 px-4 py-3 text-left hover:bg-blue-50"
-                    >
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <div class="font-semibold text-gray-900">
-                                    <span x-text="device.property_number"></span>
-                                </div>
-
-                                <div class="mt-1 text-sm text-gray-600">
-                                    <span x-text="device.type"></span>
-                                    <span> • </span>
-                                    <span x-text="device.brand || 'No brand'"></span>
-
-                                    <template x-if="device.model">
-                                        <span>
-                                            • <span x-text="device.model"></span>
-                                        </span>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                                Available
-                            </span>
-                        </div>
-                    </button>
-                </template>
-            </div>
-
-            <div
-                x-show="selectedDevice"
-                x-cloak
-                class="rounded-lg border border-green-200 bg-green-50 p-4"
-            >
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-sm font-medium text-green-700">
-                            Selected Device
-                        </div>
-
-                        <div class="mt-1 font-semibold text-gray-900">
-                            <span x-text="selectedDevice?.property_number"></span>
-                        </div>
-
-                        <div class="mt-1 text-sm text-gray-600">
-                            <span x-text="selectedDevice?.type"></span>
-                            <span> • </span>
-                            <span x-text="selectedDevice?.brand || 'No brand'"></span>
-
-                            <template x-if="selectedDevice?.model">
-                                <span>
-                                    • <span x-text="selectedDevice?.model"></span>
-                                </span>
-                            </template>
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        @click="clearSelectedDevice()"
-                        class="text-sm font-medium text-red-600 hover:text-red-700"
-                    >
-                        Remove
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-2">
-                <button
-                    type="button"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
-                    @click="issueOpen = false"
-                >
-                    Cancel
-                </button>
-
-                <button
-                    type="submit"
-                    :disabled="!selectedDevice"
-                    :class="!selectedDevice ? 'cursor-not-allowed bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'"
-                    class="rounded-lg px-4 py-2 text-white"
-                >
-                    Issue Device
-                </button>
-            </div>
-        </form>
-    </x-modal>
-
-    {{-- EDIT MODAL --}}
-    <x-modal show="editOpen" title="Edit Device">
-        <form method="POST" :action="`{{ url('/admin/devices') }}/${editDevice.id}`" class="space-y-4">
-            @csrf
-            @method('PUT')
-
-            <input type="hidden" name="device_type_id" x-model="editDevice.device_type_id">
-
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div>
-                    <label class="text-sm font-medium">Device Type</label>
-                    <input
-                        type="text"
-                        class="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2"
-                        x-model="editDevice.type_name"
-                        readonly
-                    >
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Property Number</label>
-                    <input
-                        name="property_number"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.property_number"
-                        required
-                        maxlength="50"
-                        pattern="[A-Za-z0-9][A-Za-z0-9\-\/]*"
-                        title="Letters, numbers, hyphens, and slashes only"
-                    >
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Brand</label>
-                    <input
-                        name="brand"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.brand"
-                        maxlength="100"
-                        pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.\-\s]*"
-                        title="Letters and numbers only"
-                    >
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Model</label>
-                    <input
-                        name="model"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.model"
-                        maxlength="100"
-                        pattern="[A-Za-z0-9][A-Za-z0-9.\-\/\s]*"
-                        title="Letters and numbers only"
-                    >
-                </div>
-
-                <div x-show="isComputerType(editDevice.type_name)" x-cloak>
-                    <label class="text-sm font-medium">MAC Address</label>
-                    <input
-                        name="mac_address"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.mac_address"
-                        maxlength="17"
-                        pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}"
-                        title="Format: 00:1A:2B:3C:4D:5E"
-                        placeholder="00:1A:2B:3C:4D:5E"
-                        :disabled="!isComputerType(editDevice.type_name)"
-                    >
-                </div>
-
-                <div x-show="isComputerType(editDevice.type_name)" x-cloak>
-                    <label class="text-sm font-medium">Operating System</label>
-                    <input
-                        name="specs[os]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.specs.os"
-                        maxlength="100"
-                        :disabled="!isComputerType(editDevice.type_name)"
-                    >
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Unit Price</label>
-                    <input
-                        name="unit_price"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="9999999999.99"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.unit_price"
-                    >
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Date Acquired</label>
-                    <input
-                        name="date_acquired"
-                        type="date"
-                        max="{{ now()->format('Y-m-d') }}"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.date_acquired"
-                    >
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Status</label>
-                    <select
-                        name="status"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.status"
-                    >
-                        <option value="available">Available</option>
-                        <option value="issued">Issued</option>
-                        <option value="repair">Repair</option>
-                        <option value="retired">Retired</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Last Maintenance Date</label>
-                    <input
-                        name="last_maintenance_date"
-                        type="date"
-                        max="{{ now()->format('Y-m-d') }}"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                        x-model="editDevice.last_maintenance_date"
-                    >
-                </div>
-            </div>
-
-            <div>
-                <label class="text-sm font-medium">Maintenance Remarks</label>
-                <textarea
-                    name="maintenance_remarks"
-                    rows="3"
-                    maxlength="1000"
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                    x-model="editDevice.maintenance_remarks"
-                ></textarea>
-            </div>
-
-            <div>
-                <label class="text-sm font-medium">Notes</label>
-                <textarea
-                    name="notes"
-                    rows="3"
-                    maxlength="2000"
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                    x-model="editDevice.notes"
-                ></textarea>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-2">
-                <button
-                    type="button"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
-                    @click="editOpen = false"
-                >
-                    Cancel
-                </button>
-
-                <button class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-                    Save Changes
-                </button>
-            </div>
-        </form>
-    </x-modal>
-
-    {{-- DELETE MODAL --}}
-    <x-modal show="deleteOpen" title="Delete Device">
-        <div class="space-y-3">
-            <div class="text-sm text-gray-700">
-                Are you sure you want to delete this device?
-            </div>
-
-            <form
-                method="POST"
-                :action="`{{ url('/admin/devices') }}/${deleteDeviceId}`"
-                @submit="if (!deleteDeviceId) $event.preventDefault()"
-                class="flex gap-2"
-            >
-                @csrf
-                @method('DELETE')
-
-                <button type="submit" x-ref="confirmDeleteBtn" class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">
-                    Confirm
-                </button>
-
-                <button
-                    type="button"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
-                    @click="deleteOpen = false"
-                >
-                    Cancel
-                </button>
-            </form>
-        </div>
-    </x-modal>
 </div>
 @endsection

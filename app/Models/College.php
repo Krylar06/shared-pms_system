@@ -2,15 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class College extends Model
+/**
+ * Backward-compatible alias while the system is being renamed from College to Location.
+ * New code should use App\Models\Location.
+ */
+class College extends Location
 {
-    protected $fillable = ['name', 'code'];
-
-    public function offices(): HasMany
-    {
-        return $this->hasMany(Office::class);
-    }
+    protected $table = 'locations';
 }
