@@ -63,6 +63,13 @@ class UserController extends Controller
             'email.unique' => 'This email is already registered.',
         ]);
 
+        if ($data['role'] === User::ROLE_UNIT_HEAD && User::where('role', User::ROLE_UNIT_HEAD)->exists()) {
+            return back()
+                ->withErrors([
+                    'role' => 'A Unit Head account already exists. Please update the existing Unit Head.',
+                ], 'add');
+        }
+
         $newUser = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -100,6 +107,16 @@ class UserController extends Controller
         if ($user->id === auth()->id() && $user->isAdmin() && $data['role'] !== User::ROLE_ADMIN) {
             return back()->withErrors([
                 'role' => 'You cannot remove your own admin role.',
+            ], 'edit');
+        }
+
+        if (
+            $data['role'] === User::ROLE_UNIT_HEAD &&
+            $user->role !== User::ROLE_UNIT_HEAD &&
+            User::where('role', User::ROLE_UNIT_HEAD)->exists()
+        ) {
+            return back()->withErrors([
+                'role' => 'A Unit Head account already exists.',
             ], 'edit');
         }
 

@@ -29,7 +29,7 @@
     <script>
         // Field keys that always render at the bottom of a details section,
         // in this order, regardless of where they fall in the source data.
-        const FIELD_BOTTOM_ORDER = ['maintenance_remarks', 'notes'];
+        const FIELD_BOTTOM_ORDER = ['maintenance_remarks', 'remarks', 'notes'];
 
         // Acronyms that should render fully upper-case instead of Title Case.
         const FIELD_ACRONYMS = ['ms', 'os', 'mac', 'ups', 'avr', 'id'];

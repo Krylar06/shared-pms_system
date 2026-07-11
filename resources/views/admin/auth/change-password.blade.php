@@ -3,93 +3,121 @@
 @section('title', 'Change Password')
 @section('page_title', 'Change Password')
 
-@section('breadcrumbs')
-    <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-600">Dashboard</a>
-    <span>/</span>
-    <span class="font-medium text-gray-800 dark:text-gray-100">Change Password</span>
-@endsection
-
 @section('content')
-<div class="max-w-xl">
-    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+<div class="mx-auto max-w-2xl space-y-6">
+    <div>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
             Change Password
         </h1>
-
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Update your account password.
+            Update your account password. Use at least 8 characters with uppercase, lowercase, and one special character such as #, @, $, or !.
         </p>
+    </div>
 
-        @if(session('success'))
-            <div class="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400">
-                {{ session('success') }}
-            </div>
-        @endif
+    @if(session('success'))
+        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300">
+            {{ session('success') }}
+        </div>
+    @endif
 
-        @if($errors->any())
-            <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
-                <div class="font-semibold">Please check the form.</div>
-                <ul class="mt-1 list-inside list-disc">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    @if($errors->any())
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+            <div class="font-semibold">Please fix the following:</div>
+            <ul class="mt-2 list-inside list-disc space-y-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <form method="POST" action="{{ route('admin.change-password.update') }}" class="mt-6 space-y-4">
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <form method="POST" action="{{ route('admin.change-password.update') }}" class="space-y-5">
             @csrf
+            @method('PUT')
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Current Password
+                <label for="current_password" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Current Password <span class="text-red-500">*</span>
                 </label>
                 <input
+                    id="current_password"
                     type="password"
                     name="current_password"
                     required
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    autocomplete="current-password"
+                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 >
+                @error('current_password')
+                    <div class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</div>
+                @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    New Password
+                <label for="password" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    New Password <span class="text-red-500">*</span>
                 </label>
                 <input
+                    id="password"
                     type="password"
                     name="password"
                     required
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    minlength="8"
+                    autocomplete="new-password"
+                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 >
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Must be at least 8 characters and include uppercase, lowercase, and one special character.
+                </p>
+                @error('password')
+                    <div class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</div>
+                @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Confirm New Password
+                <label for="password_confirmation" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Confirm New Password <span class="text-red-500">*</span>
                 </label>
                 <input
+                    id="password_confirmation"
                     type="password"
                     name="password_confirmation"
                     required
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    minlength="8"
+                    autocomplete="new-password"
+                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 >
             </div>
 
-            <div class="flex justify-end gap-2 pt-2">
-                <a
-                    href="{{ route('admin.dashboard') }}"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            <label class="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
+                <input
+                    type="checkbox"
+                    name="logout_after_change"
+                    value="1"
+                    class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 >
-                    Cancel
-                </a>
+                <span>
+                    Log me out after changing my password.
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">
+                        Recommended when using a shared or public computer.
+                    </span>
+                </span>
+            </label>
 
+            <div class="flex items-center gap-3 pt-2">
                 <button
                     type="submit"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                 >
                     Update Password
                 </button>
+
+                <a
+                    href="{{ route('admin.dashboard') }}"
+                    class="rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Cancel
+                </a>
             </div>
         </form>
     </div>

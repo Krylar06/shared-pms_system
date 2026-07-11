@@ -5,14 +5,14 @@
 
 @section('content')
 @php
-    $assignments = $assignments ?? collect();
+    $assignments = $assignments ?? ($issued ?? collect());
     $availableDevices = $availableDevices ?? collect();
 
     $staffName = trim(($staff->first_name ?? '') . ' ' . ($staff->last_name ?? ''));
     $staffName = $staffName !== '' ? $staffName : ($staff->name ?? 'Staff');
 
     $office = $staff->office ?? null;
-    $college = $office?->college;
+    $location = $office?->location ?? $office?->college;
 
     $deviceLabel = function ($device) {
         if (! $device) {
@@ -40,8 +40,8 @@
 
             <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {{ $office?->name ?? 'No office assigned' }}
-                @if($college)
-                    <span class="mx-1">•</span>{{ $college->name }}
+                @if($location)
+                    <span class="mx-1">•</span>{{ $location->name }}
                 @endif
             </div>
         </div>
@@ -111,8 +111,8 @@
                 </div>
 
                 <div>
-                    <dt class="text-gray-500 dark:text-gray-400">College</dt>
-                    <dd class="text-gray-900 dark:text-white">{{ $college?->name ?? '-' }}</dd>
+                    <dt class="text-gray-500 dark:text-gray-400">Location</dt>
+                    <dd class="text-gray-900 dark:text-white">{{ $location?->name ?? '-' }}</dd>
                 </div>
 
                 <div>

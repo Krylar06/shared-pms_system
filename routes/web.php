@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ChangePasswordController;
 use App\Http\Controllers\Admin\DeviceChecklistController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
@@ -82,29 +83,11 @@ Route::middleware(['auth', 'role:admin,custodian'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::view('/org-browser', 'admin.org-browser')->name('admin.org-browser');
         Route::view('/scanner', 'admin.scanner')->name('admin.scanner');
-        Route::get('/change-password', function () {
-            return view('admin.auth.change-password');
-        })->name('admin.change-password');
-        Route::post('/change-password', function (\Illuminate\Http\Request $request) {
-            $request->validate([
-                'current_password' => ['required'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
-            ]);
+        Route::get('/change-password', [ChangePasswordController::class, 'edit'])
+            ->name('admin.change-password');
 
-            $user = auth()->user();
-
-            if (! \Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
-                return back()
-                    ->withErrors(['current_password' => 'The current password is incorrect.'])
-                    ->onlyInput();
-            }
-
-            $user->update([
-                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-            ]);
-
-            return back()->with('success', 'Password updated successfully.');
-        })->name('admin.change-password.update');
+        Route::put('/change-password', [ChangePasswordController::class, 'update'])
+            ->name('admin.change-password.update');
 
         /*
         |--------------------------------------------------------------------------

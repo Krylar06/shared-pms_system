@@ -14,9 +14,9 @@ class StaffDeviceController extends Controller
 {
     public function index(Staff $staff)
     {
-        $staff->load('office.college');
+        $staff->load('office.location');
 
-        $issued = DeviceAssignment::query()
+        $assignments = DeviceAssignment::query()
             ->where('staff_id', $staff->id)
             ->whereNull('returned_at')
             ->with([
@@ -41,13 +41,14 @@ class StaffDeviceController extends Controller
             ->orderBy('property_number')
             ->get();
 
-        return view('admin.staff.devices', compact('staff', 'issued', 'availableDevices'));
+        return view('admin.staff.devices', compact('staff', 'assignments', 'availableDevices'));
     }
 
     public function issue(Request $request, Staff $staff)
     {
         $data = $request->validate([
             'device_id' => ['required', 'exists:devices,id'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
 
         /*
@@ -76,6 +77,7 @@ class StaffDeviceController extends Controller
             'staff_id' => $staff->id,
             'issued_by' => Auth::id(),
             'issued_at' => now(),
+            'remarks' => $data['remarks'] ?? null,
         ]);
 
         $device->update([
@@ -97,11 +99,15 @@ class StaffDeviceController extends Controller
             'brand' => $device->brand,
             'issued_to' => trim($staff->first_name . ' ' . $staff->last_name),
             'office' => optional($staff->office)->name,
-            'college' => optional(optional($staff->office)->college)->name,
+            'location' => optional(optional($staff->office)->location)->name,
             'status' => 'Available → Issued',
             'issued_by' => Auth::user()->name,
             'issued_at' => now()->format('M d, Y h:i A'),
         ];
+
+        if (filled($data['remarks'] ?? null)) {
+            $summary['remarks'] = $data['remarks'];
+        }
 
         ActivityLog::record(
             'issued',
@@ -169,7 +175,7 @@ class StaffDeviceController extends Controller
                 'brand' => $assignment->device->brand,
                 'returned_from' => trim($staff->first_name . ' ' . $staff->last_name),
                 'office' => optional($staff->office)->name,
-                'college' => optional(optional($staff->office)->college)->name,
+                'location' => optional(optional($staff->office)->location)->name,
                 'status' => 'Issued → Available',
                 'returned_by' => Auth::user()->name,
                 'returned_at' => now()->format('M d, Y h:i A'),
