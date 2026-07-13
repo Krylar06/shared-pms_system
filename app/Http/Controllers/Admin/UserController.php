@@ -12,8 +12,6 @@ use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
-    private const NAME_REGEX = '/^[A-Za-zÑñ][A-Za-zÑñ.\-\'\s]*$/u';
-
     private function buildSummary(User $user): array
     {
         return [
@@ -54,13 +52,19 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $data = $request->validateWithBag('add', [
-            'name' => ['required', 'string', 'max:100', 'regex:' . self::NAME_REGEX],
+            'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in(array_keys(User::ROLES))],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->symbols(),
+            ],
         ], [
-            'name.regex' => 'Please enter a valid name (letters only).',
             'email.unique' => 'This email is already registered.',
+            'password.confirmed' => 'The password confirmation does not match.',
         ]);
 
         if ($data['role'] === User::ROLE_UNIT_HEAD && User::where('role', User::ROLE_UNIT_HEAD)->exists()) {
@@ -91,15 +95,21 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $rules = [
-            'name' => ['required', 'string', 'max:100', 'regex:' . self::NAME_REGEX],
+            'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in(array_keys(User::ROLES))],
-            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'password' => [
+                'nullable',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->symbols(),
+            ],
         ];
 
         $data = $request->validateWithBag('edit', $rules, [
-            'name.regex' => 'Please enter a valid name (letters only).',
             'email.unique' => 'This email is already registered.',
+            'password.confirmed' => 'The password confirmation does not match.',
         ]);
 
         // Safety net: an admin can't demote themselves away from admin —
