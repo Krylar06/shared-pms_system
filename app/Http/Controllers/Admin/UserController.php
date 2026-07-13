@@ -12,8 +12,6 @@ use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
-    private const NAME_REGEX = '/^[A-Za-zÑñ][A-Za-zÑñ.\-\'\s]*$/u';
-
     private function buildSummary(User $user): array
     {
         return [
@@ -54,7 +52,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $data = $request->validateWithBag('add', [
-            'name' => ['required', 'string', 'max:100', 'regex:' . self::NAME_REGEX],
+            'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in(array_keys(User::ROLES))],
             'password' => [
@@ -65,7 +63,6 @@ class UserController extends Controller
                     ->symbols(),
             ],
         ], [
-            'name.regex' => 'Please enter a valid name (letters only).',
             'email.unique' => 'This email is already registered.',
             'password.confirmed' => 'The password confirmation does not match.',
         ]);
@@ -98,7 +95,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $rules = [
-            'name' => ['required', 'string', 'max:100', 'regex:' . self::NAME_REGEX],
+            'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in(array_keys(User::ROLES))],
             'password' => [
@@ -111,7 +108,6 @@ class UserController extends Controller
         ];
 
         $data = $request->validateWithBag('edit', $rules, [
-            'name.regex' => 'Please enter a valid name (letters only).',
             'email.unique' => 'This email is already registered.',
             'password.confirmed' => 'The password confirmation does not match.',
         ]);

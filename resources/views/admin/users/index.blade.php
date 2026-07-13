@@ -214,13 +214,12 @@ document.addEventListener('alpine:init', () => {
             <div>
 <label class="text-sm font-medium">Full Name <span class="text-red-600">*</span></label>
                 <input
+                    type="text"
                     name="name"
                     x-model="addSingle.name"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     required
                     maxlength="100"
-                    pattern="[A-Za-zÑñ][A-Za-zÑñ.\-'\s]*"
-                    title="Letters only"
                     placeholder="e.g. Juan Dela Cruz"
                 >
                 <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="addSingle.nameError" x-text="addSingle.nameError"></div>
@@ -331,13 +330,12 @@ document.addEventListener('alpine:init', () => {
             <div>
 <label class="text-sm font-medium">Full Name <span class="text-red-600">*</span></label>
                 <input
+                    type="text"
                     name="name"
                     x-model="editUser.name"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     required
                     maxlength="100"
-                    pattern="[A-Za-zÑñ][A-Za-zÑñ.\-'\s]*"
-                    title="Letters only"
                 >
                 <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editUser.nameError" x-text="editUser.nameError"></div>
             </div>
