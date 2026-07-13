@@ -203,7 +203,7 @@
 
                 <div>
                     <div class="text-xl font-bold tracking-tight dark:text-white">PMAMS</div>
-                    <div class="text-xs text-gray-500 -mt-0.5 dark:text-gray-400">Equipment Device System</div>
+                    <div class="text-xs text-gray-500 -mt-0.5 dark:text-gray-400"> ICT Equipment Management System</div>
                 </div>
             </div>
 
@@ -253,10 +253,13 @@
                     <span>Equipment Manager</span>
                 </a>
 
-
                 <a
-                    href="{{ route('admin.reports.index') }}"
+
+                     href="{{ route('admin.reports.index') }}"
                     class="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
+                    {{ request()->routeIs('admin.reports.*') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+                >
+                    <svg class="w-5 h-5 {{ request()->routeIs('admin.reports.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {{ request()->routeIs('admin.reports.*')
                         ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -274,6 +277,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-6m4 6V7m4 10v-3M5 19h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     <span>Reports</span>
+
+                
+                    
                 </a>
 
                 <a
@@ -444,9 +450,10 @@
                             </div>
 
                             <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm dark:bg-orange-900/40 dark:ring-gray-800">
-                                <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5.121 17.804A9 9 0 1118.88 17.8M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
+                            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="3.2" stroke-width="1.8"/>
+                            <path stroke-linecap="round" stroke-width="1.8" d="M5.5 19c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/>
+                               </svg>
                             </div>
                         </button>
 
@@ -454,7 +461,7 @@
                             x-cloak
                             x-show="profileOpen"
                             x-transition
-                            @click.away="profileOpen = false"
+                             @click.away="profileOpen = false"
                             class="absolute right-0 mt-2 w-72 rounded-2xl bg-white shadow-xl ring-1 ring-gray-200 overflow-hidden dark:bg-gray-800 dark:ring-gray-700"
                         >
                             <div class="px-4 py-4 border-b border-gray-100 dark:border-gray-700">
@@ -465,6 +472,7 @@
                                     {{ auth()->user()->email ?? 'admin@example.com' }}
                                 </div>
                             </div>
+                        <div class="py-2">
                             <div class="py-2">
                                 <a
                                     href="{{ route('admin.devices.index') }}"
@@ -494,6 +502,10 @@
                                     Change Password
                                 </a>
 
+                            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">Dashboard</a>
+                            <a href="{{ route('admin.devices.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">Device Manager</a>
+                            <a href="{{ route('admin.reports.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">Reports</a>
+                            <a href="{{ route('admin.scanner') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">QR Scanner</a>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button
