@@ -121,7 +121,7 @@
             @if($windowStart > 2)
 
                 <button @click="openJump()"
-                    class="flex h-10 min-w-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 hover:bg-gray-50">
+                    class="flex h-10 min-w-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 hover:bg-gray-50 cursor-pointer">
 
                     ...
 
@@ -129,23 +129,25 @@
 
             @endif
 
-            @foreach(range($windowStart, $windowEnd) as $page)
+            @if($windowEnd >= $windowStart)
+                @foreach(range($windowStart, $windowEnd) as $page)
 
-                <a href="{{ $paginator->url($page) }}" class="flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 transition-all duration-150
-                                                {{ $page == $current
-                    ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
-                    : 'border-gray-300 bg-white hover:bg-gray-50' }}">
+                    <a href="{{ $paginator->url($page) }}" class="flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 transition-all duration-150
+                                                    {{ $page == $current
+                        ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                        : 'border-gray-300 bg-white hover:bg-gray-50' }}">
 
-                    {{ $page }}
+                        {{ $page }}
 
-                </a>
+                    </a>
 
-            @endforeach
+                @endforeach
+            @endif
 
             @if($windowEnd < $last - 1)
 
                 <button @click="openJump()"
-                    class="flex h-10 min-w-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 hover:bg-gray-50">
+                    class="flex h-10 min-w-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 hover:bg-gray-50 cursor-pointer">
 
                     ...
 
