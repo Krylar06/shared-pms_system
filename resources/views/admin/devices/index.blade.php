@@ -45,7 +45,6 @@
             ms_office_license: '',
             specs: {
                 computer_name: '',
-                os: '',
                 memory: '',
                 storage: '',
                 form_factor: ''
@@ -93,7 +92,6 @@
         openEdit(device) {
             device.specs = device.specs ?? {};
             device.specs.computer_name = device.specs.computer_name ?? '';
-            device.specs.os = device.specs.os ?? '';
             device.specs.memory = device.specs.memory ?? '';
             device.specs.storage = device.specs.storage ?? '';
             device.specs.form_factor = device.specs.form_factor ?? '';
@@ -290,11 +288,6 @@
                         <div>
                             <div class="text-gray-500 dark:text-gray-400">MAC Address</div>
                             <div class="text-gray-900 dark:text-white">{{ $d->mac_address ?: '-' }}</div>
-                        </div>
-
-                        <div>
-                            <div class="text-gray-500 dark:text-gray-400">Operating System</div>
-                            <div class="text-gray-900 dark:text-white">{{ data_get($d->specs, 'os', '-') ?: '-' }}</div>
                         </div>
 
                         <div>
@@ -649,18 +642,6 @@
                 </div>
 
                 <div x-show="isComputerType(addTypeId)" x-cloak>
-                    <label class="text-sm font-medium dark:text-gray-300">Operating System</label>
-                    <input
-                        name="specs[os]"
-                        value="{{ old('specs.os') }}"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        maxlength="100"
-                        placeholder="Example: Windows 10, Windows 11, Ubuntu"
-                        :disabled="!isComputerType(addTypeId)"
-                    >
-                </div>
-
-                <div x-show="isComputerType(addTypeId)" x-cloak>
                     <label class="text-sm font-medium dark:text-gray-300">Memory</label>
                     <input
                         name="specs[memory]"
@@ -940,17 +921,6 @@
                         maxlength="17"
                         pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}"
                         title="Format: 00:1A:2B:3C:4D:5E"
-                        :disabled="!isComputerType(editDevice.device_type_id)"
-                    >
-                </div>
-
-                <div x-show="isComputerType(editDevice.device_type_id)" x-cloak>
-                    <label class="text-sm font-medium dark:text-gray-300">Operating System</label>
-                    <input
-                        name="specs[os]"
-                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        x-model="editDevice.specs.os"
-                        maxlength="100"
                         :disabled="!isComputerType(editDevice.device_type_id)"
                     >
                 </div>
