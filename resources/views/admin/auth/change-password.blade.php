@@ -32,7 +32,16 @@
     @endif
 
     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <form method="POST" action="{{ route('admin.change-password.update') }}" class="space-y-5">
+        <form
+            method="POST"
+            action="{{ route('admin.change-password.update') }}"
+            x-data="{
+                showCurrentPassword: false,
+                showNewPassword: false,
+                showConfirmPassword: false
+            }"
+            class="space-y-5"
+        >
             @csrf
             @method('PUT')
 
@@ -40,14 +49,25 @@
                 <label for="current_password" class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Current Password <span class="text-red-500">*</span>
                 </label>
-                <input
-                    id="current_password"
-                    type="password"
-                    name="current_password"
-                    required
-                    autocomplete="current-password"
-                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                >
+                <div class="relative mt-1">
+                    <input
+                        id="current_password"
+                        :type="showCurrentPassword ? 'text' : 'password'"
+                        name="current_password"
+                        required
+                        autocomplete="current-password"
+                        class="w-full rounded-xl border border-gray-300 px-3 py-2 pr-12 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+
+                    <button
+                        type="button"
+                        x-on:click="showCurrentPassword = !showCurrentPassword"
+                        class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+                    >
+                        <span x-show="!showCurrentPassword">👁</span>
+                        <span x-show="showCurrentPassword" x-cloak>🙈</span>
+                    </button>
+                </div>
                 @error('current_password')
                     <div class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</div>
                 @enderror
@@ -57,15 +77,26 @@
                 <label for="password" class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     New Password <span class="text-red-500">*</span>
                 </label>
-                <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    required
-                    minlength="8"
-                    autocomplete="new-password"
-                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                >
+                <div class="relative mt-1">
+                    <input
+                        id="password"
+                        :type="showNewPassword ? 'text' : 'password'"
+                        name="password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                        class="w-full rounded-xl border border-gray-300 px-3 py-2 pr-12 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+
+                    <button
+                        type="button"
+                        x-on:click="showNewPassword = !showNewPassword"
+                        class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+                    >
+                        <span x-show="!showNewPassword">👁</span>
+                        <span x-show="showNewPassword" x-cloak>🙈</span>
+                    </button>
+                </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Must be at least 8 characters and include uppercase, lowercase, and one special character.
                 </p>
@@ -78,15 +109,26 @@
                 <label for="password_confirmation" class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Confirm New Password <span class="text-red-500">*</span>
                 </label>
-                <input
-                    id="password_confirmation"
-                    type="password"
-                    name="password_confirmation"
-                    required
-                    minlength="8"
-                    autocomplete="new-password"
-                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                >
+                <div class="relative mt-1">
+                    <input
+                        id="password_confirmation"
+                        :type="showConfirmPassword ? 'text' : 'password'"
+                        name="password_confirmation"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                        class="w-full rounded-xl border border-gray-300 px-3 py-2 pr-12 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+
+                    <button
+                        type="button"
+                        x-on:click="showConfirmPassword = !showConfirmPassword"
+                        class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+                    >
+                        <span x-show="!showConfirmPassword">👁</span>
+                        <span x-show="showConfirmPassword" x-cloak>🙈</span>
+                    </button>
+                </div>
             </div>
 
             <label class="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
