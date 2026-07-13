@@ -306,5 +306,3 @@
     }
 </script>
 @endpush
-
-@endsection
