@@ -357,7 +357,7 @@
             </div>
             <div class="brand-text">
                 <div class="brand-name">PMAMS</div>
-                <div class="brand-sub">Equipment Management System</div>
+                <div class="brand-sub"> ICT Equipment Management System</div>
             </div>
         </div>
 

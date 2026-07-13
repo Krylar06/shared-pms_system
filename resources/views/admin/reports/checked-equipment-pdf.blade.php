@@ -8,7 +8,7 @@
         /* 8.5 x 13 inches / long coupon bond, landscape */
         @page {
             size: 13in 8.5in;
-            margin: 92px 24px 82px 24px;
+            margin: 124px 24px 82px 24px;
         }
 
         * {
@@ -41,7 +41,7 @@
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            table-layout: auto;
         }
 
         .header-table td {
@@ -51,42 +51,56 @@
         }
 
         .logo-cell {
-            width: 54px;
-            padding-top: 2px !important;
+            width: 110px;
+            position: relative;
         }
 
         .logo {
-            width: 44px;
-            height: 44px;
+            position: absolute;
+            top: 5px;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .school-text div:first-child {
+            font-style: italic;
         }
 
         .school-text {
-            font-size: 8px;
+            font-size: 11px;
             line-height: 1.15;
-            padding-top: 1px !important;
+            padding-top: 5px !important;
+            margin-left: 0;
         }
 
         .school-name {
-            font-size: 9.5px;
+            font-size: 9.3px;
             font-weight: bold;
             text-transform: uppercase;
             line-height: 1.05;
+            letter-spacing: 0.15px;
+        }
+
+        .header-spacer {
+            width: auto;
         }
 
         .unit-title {
             position: absolute;
-            top: 38px;
-            left: 54px;
-            font-size: 8.2px;
+            top: 70px;
+            left: 52px;
+            font-size: 11px;
+            font-family: Arial, Helvetica, sans-serif;
             white-space: nowrap;
         }
 
         .header-date {
             position: absolute;
-            top: 45px;
+            top: 101px;
             right: 0;
             width: 190px;
-            font-size: 8.2px;
+            font-size: 8.1px;
             text-align: left;
         }
 
@@ -106,46 +120,69 @@
 
         .blue-rule-top {
             position: absolute;
-            left: 0;
-            right: 0;
-            top: 56px;
+            left: 50px;
+            right: 50px;
+            top:  60px;
             border-top: 2px solid #1d70b8;
         }
 
         .office-line-wrap {
             position: absolute;
-            top: 61px;
-            left: 0;
+            top: 101px;
+            left: 52px;
             width: 380px;
-            font-size: 8px;
+            font-size: 11px;
         }
 
         .office-line {
-            width: 235px;
+            width: 115px;
             text-align: center;
         }
 
         .form-title {
             position: absolute;
-            top: 61px;
+            top: 81px;
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 9.2px;
+            font-size: 11px;
             font-weight: bold;
             letter-spacing: 0.2px;
             text-transform: uppercase;
         }
 
+        /* TABLE AREA ONLY - header and footer are intentionally unchanged. */
         .content {
-            width: 100%;
+            width: 96%;
+            margin-top: 45px;
+            padding: 0;
+            margin-left: auto;
+            margin-right: auto;
         }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .remarks-cell,
+        .action-cell {
+            font-size: 9px;
+            line-height: 1.05;
+            text-align: left;
+            padding-left: 2px;
+            padding-right: 2px;
+            overflow: hidden;
+        }
+
 
         .main-table {
             width: 100%;
+            max-width: none;
             border-collapse: collapse;
             table-layout: fixed;
             page-break-inside: auto;
+            margin: 0;
+            font-size: 6.9px;
         }
 
         thead {
@@ -164,12 +201,14 @@
         .main-table th,
         .main-table td {
             border: 1px solid #111827;
-            padding: 2px 2px;
+            padding: 1px 1px;
             text-align: center;
             vertical-align: middle;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            overflow: hidden;
             line-height: 1.05;
+            font-size: 9px;
         }
 
         .main-table th {
@@ -178,35 +217,42 @@
 
         .main-table .left {
             text-align: left;
+            padding-left: 2px;
+            font-size: 9px;
+            line-height: 1.05;
         }
 
         .label-row th {
-            font-size: 6.5px;
+            font-size: 9px;
             font-weight: normal;
             line-height: 1.05;
         }
 
         .status-head {
-            font-size: 6.5px;
-            line-height: 1;
+            font-size: 9px;
+            line-height: 1.05;
             font-weight: normal;
         }
 
         .row-height td {
-            height: 25px;
+            height: 42px;
         }
 
         .check {
             font-family: DejaVu Sans, Arial, sans-serif;
             font-size: 9px;
             font-weight: bold;
-            line-height: 1;
+            line-height: 1.05;
         }
 
         .remarks-cell,
         .action-cell {
-            font-size: 6.8px;
-            line-height: 1.08;
+            font-size: 6.2px;
+            line-height: 1.04;
+            text-align: left;
+            padding-left: 2px;
+            padding-right: 2px;
+            overflow: hidden;
         }
 
         .footer-signatures {
@@ -214,6 +260,8 @@
             border-collapse: collapse;
             table-layout: fixed;
             margin-bottom: 8px;
+            position: relative;
+            top: -24px;
         }
 
         .footer-signatures td {
@@ -225,13 +273,14 @@
 
         .sig-label {
             display: inline-block;
-            width: 56px;
+            width: 62px;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .sig-name-line {
             display: inline-block;
-            width: 175px;
+            width: 210px;
             height: 13px;
             border-bottom: 1px solid #111827;
             text-align: center;
@@ -240,40 +289,46 @@
 
         .sig-date-line {
             display: inline-block;
-            width: 95px;
+            width: 210px;
             height: 13px;
             border-bottom: 1px solid #111827;
             text-align: center;
             vertical-align: bottom;
         }
 
+        .approved-signature-block {
+            display: inline-block;
+            width: 300px;
+            text-align: left;
+        }
+
         .document-footer {
             position: absolute;
-            left: 0;
-            right: 0;
+            left: 50px;
+            right: 50px;
             bottom: 0;
-            height: 16px;
+            height: 18px;
             border-top: 2px solid #1d70b8;
-            font-size: 7px;
+            font-size: 9px;
         }
 
         .document-footer .code {
             position: absolute;
             left: 0;
-            top: 3px;
+            top: 4px;
         }
 
         .document-footer .rev {
             position: absolute;
-            left: 49%;
-            top: 3px;
+            left: 50%;
+            top: 4px;
             transform: translateX(-50%);
         }
 
         .document-footer .effectivity {
             position: absolute;
             right: 0;
-            top: 3px;
+            top: 4px;
         }
     </style>
 </head>
@@ -308,12 +363,12 @@
     $logoPath = public_path('images/catsu-logo.png');
 
     $hardwareItems = $checklistItems ?? [
-        'system_unit_power_on' => ['group' => 'System Unit', 'label' => 'Check for power on'],
-        'monitor_display' => ['group' => 'Monitor', 'label' => 'Check display'],
-        'keyboard_keys' => ['group' => 'Keyboard', 'label' => 'Check for keys'],
-        'mouse_buttons' => ['group' => 'Mouse', 'label' => 'Check mouse left/right buttons'],
-        'avr_ups_power_recovery' => ['group' => 'AVR/UPS', 'label' => 'Check for power recovery'],
-        'printer_printout' => ['group' => 'Printer', 'label' => 'Check printout'],
+        'system_unit_power_on' => ['group' => 'System Unit', 'label' => 'Check for<br>power on'],
+        'monitor_display' => ['group' => 'Monitor', 'label' => 'Check<br>display'],
+        'keyboard_keys' => ['group' => 'Keyboard', 'label' => 'Check for<br>keys'],
+        'mouse_buttons' => ['group' => 'Mouse', 'label' => 'Check<br>mouse<br>left/right<br>buttons'],
+        'avr_ups_power_recovery' => ['group' => 'AVR/UPS', 'label' => 'Check for<br>power<br>recovery'],
+        'printer_printout' => ['group' => 'Printer', 'label' => 'Check<br>printout'],
     ];
 
     $softwareItems = $softwareItems ?? [
@@ -351,6 +406,88 @@
     $checkedByText = $firstRecord?->checkedBy?->name
         ?? auth()->user()->name
         ?? '';
+
+    /*
+     * Dynamic page split for DOMPDF.
+     *
+     * Goal:
+     * - The table always has 8 row-units of height per coupon/page.
+     * - Short records use 1 row-unit.
+     * - Long Remarks / Corrective Action records use 2+ row-units.
+     * - If a long record will not fit, it automatically moves to the next coupon/page.
+     * - Blank rows are added only until the page reaches the same table length.
+     */
+    $rowUnitsPerPage = 8;
+    $rowUnitHeight = 42;
+
+    $plainCellText = function ($value) {
+        return trim(preg_replace('/\s+/', ' ', strip_tags((string) $value)));
+    };
+
+    $estimateRowUnits = function ($record) use (
+        $getChecklistData,
+        $displayComputerPeripheral,
+        $plainCellText,
+        $rowUnitsPerPage
+    ) {
+        $data = $getChecklistData($record);
+        $correctiveAction = $record->corrective_action ?? data_get($data, 'corrective_action', '');
+
+        $computerText = $plainCellText($displayComputerPeripheral($record));
+        $remarksText = $plainCellText($record->remarks ?? '');
+        $actionText = $plainCellText($correctiveAction);
+
+        /*
+         * These numbers are practical estimates for this PDF layout.
+         * Lower number = row becomes taller sooner.
+         */
+        $computerUnits = (int) ceil(max(1, \Illuminate\Support\Str::length($computerText)) / 36);
+        $remarksUnits = (int) ceil(max(1, \Illuminate\Support\Str::length($remarksText)) / 50);
+        $actionUnits = (int) ceil(max(1, \Illuminate\Support\Str::length($actionText)) / 50);
+
+        $units = max(1, $computerUnits, $remarksUnits, $actionUnits);
+
+        return min($rowUnitsPerPage, $units);
+    };
+
+    $recordPages = collect();
+    $currentRows = collect();
+    $currentUnits = 0;
+
+    foreach ($records as $pageRecord) {
+        $units = $estimateRowUnits($pageRecord);
+
+        if ($currentRows->isNotEmpty() && (($currentUnits + $units) > $rowUnitsPerPage)) {
+            $recordPages->push([
+                'rows' => $currentRows,
+                'used_units' => $currentUnits,
+            ]);
+
+            $currentRows = collect();
+            $currentUnits = 0;
+        }
+
+        $currentRows->push([
+            'record' => $pageRecord,
+            'units' => $units,
+        ]);
+
+        $currentUnits += $units;
+    }
+
+    if ($currentRows->isNotEmpty()) {
+        $recordPages->push([
+            'rows' => $currentRows,
+            'used_units' => $currentUnits,
+        ]);
+    }
+
+    if ($recordPages->isEmpty()) {
+        $recordPages->push([
+            'rows' => collect(),
+            'used_units' => 0,
+        ]);
+    }
 @endphp
 
 <div class="page-header">
@@ -368,7 +505,7 @@
                 <div>Virac, Catanduanes</div>
             </td>
 
-            <td style="width: 230px;"></td>
+            <td class="header-spacer"></td>
         </tr>
     </table>
 
@@ -401,11 +538,15 @@
             </td>
 
             <td style="width: 50%; text-align: right;">
-                <span class="sig-label">Approved by:</span>
-                <span class="sig-name-line"></span>
-                <br>
-                <span class="sig-label">Date:</span>
-                <span class="sig-date-line"></span>
+                <div class="approved-signature-block">
+                    <span class="sig-label">Approved by:</span>
+                    <span class="sig-name-line">
+                        {{ $unitHead?->name ?? '' }}
+                    </span>
+                    <br>
+                    <span class="sig-label">Date:</span>
+                    <span class="sig-date-line"></span>
+                </div>
             </td>
         </tr>
     </table>
@@ -417,30 +558,75 @@
     </div>
 </div>
 
+@foreach($recordPages as $pageIndex => $page)
+@php
+    $pageRows = $page['rows'];
+    $usedUnits = $page['used_units'];
+@endphp
+
 <div class="content">
     <table class="main-table">
+        <colgroup>
+            {{-- Computers and Peripherals --}}
+            <col style="width: 16%;">
+
+            {{-- System Unit: OK / Not OK --}}
+            <col style="width: 3.5%;">
+            <col style="width: 3.5%;">
+
+            {{-- Monitor: OK / Not OK --}}
+            <col style="width: 3.5%;">
+            <col style="width: 3.5%;">
+
+            {{-- Keyboard: OK / Not OK --}}
+            <col style="width: 3.5%;">
+            <col style="width: 3.5%;">
+
+            {{-- Mouse: OK / Not OK --}}
+            <col style="width: 3.5%;">
+            <col style="width: 3.5%;">
+
+            {{-- AVR/UPS: OK / Not OK --}}
+            <col style="width: 3.5%;">
+            <col style="width: 3.5%;">
+
+            {{-- Printer: OK / Not OK --}}
+            <col style="width: 3.5%;">
+            <col style="width: 3.5%;">
+
+            {{-- Software --}}
+            <col style="width: 6%;">
+            <col style="width: 8%;">
+
+            {{-- Remarks --}}
+            <col style="width: 13%;">
+
+            {{-- Corrective Action --}}
+            <col style="width: 15%;">
+        </colgroup>
+
         <thead>
             <tr>
-                <th rowspan="3" style="width: 5.2%;">Computers and Peripherals</th>
+                <th rowspan="3" style="width: 16%;">Computers and Peripherals</th>
 
-                <th colspan="2" style="width: 7.2%;">System<br>Unit</th>
-                <th colspan="2" style="width: 7.2%;">Monitor</th>
-                <th colspan="2" style="width: 7.2%;">Keyboard</th>
-                <th colspan="2" style="width: 7.2%;">Mouse</th>
-                <th colspan="2" style="width: 7.2%;">AVR/UPS</th>
-                <th colspan="2" style="width: 7.2%;">Printer</th>
-                <th colspan="2" style="width: 7.4%;">Software</th>
-                <th rowspan="3" style="width: 10.8%;">Remarks</th>
-                <th rowspan="3" style="width: 10.8%;">Corrective<br>Action</th>
+                <th colspan="2" style="width: 7%;">System<br>Unit</th>
+                <th colspan="2" style="width: 7%;">Monitor</th>
+                <th colspan="2" style="width: 7%;">Keyboard</th>
+                <th colspan="2" style="width: 7%;">Mouse</th>
+                <th colspan="2" style="width: 7%;">AVR/UPS</th>
+                <th colspan="2" style="width: 7%;">Printer</th>
+                <th colspan="2" style="width: 14%;">Software</th>
+                <th rowspan="3" style="width: 13%;">Remarks</th>
+                <th rowspan="3" style="width: 15%;">Corrective<br>Action</th>
             </tr>
 
             <tr class="label-row">
                 @foreach($hardwareItems as $item)
-                    <th colspan="2">{{ $item['label'] ?? '-' }}</th>
+                    <th colspan="2">{!! $item['label'] ?? '-' !!}</th>
                 @endforeach
 
-                <th>Setup Anti-<br>Virus</th>
-                <th>System Scan<br>and Removal<br>of Malicious<br>Software</th>
+                <th rowspan="2">Setup Anti-<br>Virus</th>
+                <th rowspan="2">System Scan<br>and Removal<br>of Malicious<br>Software</th>
             </tr>
 
             <tr class="status-head">
@@ -448,15 +634,17 @@
                     <th>OK</th>
                     <th>Not<br>OK</th>
                 @endforeach
-
-                <th></th>
-                <th></th>
             </tr>
         </thead>
 
         <tbody>
-            @forelse($records as $index => $record)
+            @forelse($pageRows as $pageRow)
                 @php
+                    $record = $pageRow['record'];
+                    $rowUnits = $pageRow['units'];
+                    $rowHeight = $rowUnits * $rowUnitHeight;
+                    $rowHeightStyle = 'height: ' . $rowHeight . 'px;';
+
                     $data = $getChecklistData($record);
                     $hardware = $data['hardware'] ?? $data['hardwareResponses'] ?? [];
                     $software = $data['software'] ?? $data['softwareResponses'] ?? [];
@@ -464,41 +652,47 @@
                 @endphp
 
                 <tr class="row-height">
-                    <td class="left">{{ $displayComputerPeripheral($record) }}</td>
+                    <td class="left" style="{{ $rowHeightStyle }}">{{ $displayComputerPeripheral($record) }}</td>
 
                     @foreach($hardwareItems as $key => $item)
                         @php $value = $hardware[$key] ?? ''; @endphp
-                        <td class="check">{{ $value === 'OK' ? '✓' : '' }}</td>
-                        <td class="check">{{ $value === 'Not OK' ? '✓' : '' }}</td>
+                        <td class="check" style="{{ $rowHeightStyle }} width: 3.5%;">{{ $value === 'OK' ? '✓' : '' }}</td>
+                        <td class="check" style="{{ $rowHeightStyle }} width: 3.5%;">{{ $value === 'Not OK' ? '✓' : '' }}</td>
                     @endforeach
 
-                    <td class="check">{{ ($software['setup_antivirus'] ?? '') === 'check' ? '✓' : '' }}</td>
-                    <td class="check">{{ ($software['system_scan_removal'] ?? '') === 'check' ? '✓' : (($software['system_scan_removal'] ?? '') === 'dash' ? '-' : '') }}</td>
+                    <td class="check" style="{{ $rowHeightStyle }} width: 6%;">{{ ($software['setup_antivirus'] ?? '') === 'check' ? '✓' : '' }}</td>
+                    <td class="check" style="{{ $rowHeightStyle }} width: 8%;">{{ ($software['system_scan_removal'] ?? '') === 'check' ? '✓' : (($software['system_scan_removal'] ?? '') === 'dash' ? '-' : '') }}</td>
 
-                    <td class="remarks-cell">{{ $record->remarks ?? '' }}</td>
-                    <td class="action-cell">{{ $correctiveAction }}</td>
+                    <td class="remarks-cell" style="{{ $rowHeightStyle }} width: 13%;">{{ $plainCellText($record->remarks ?? '') }}</td>
+                    <td class="action-cell" style="{{ $rowHeightStyle }} width: 15%;">{{ $plainCellText($correctiveAction) }}</td>
                 </tr>
             @empty
-                <tr class="row-height">
-                    <td colspan="17">No checked equipment records found.</td>
-                </tr>
+                {{-- No records: show blank rows below. --}}
             @endforelse
 
-            @for($i = $records->count(); $i < 10; $i++)
+            @for($i = $usedUnits; $i < $rowUnitsPerPage; $i++)
+                @php
+                    $blankRowHeightStyle = 'height: ' . $rowUnitHeight . 'px;';
+                @endphp
                 <tr class="row-height">
-                    <td>&nbsp;</td>
+                    <td style="{{ $blankRowHeightStyle }}">&nbsp;</td>
                     @foreach($hardwareItems as $item)
-                        <td></td>
-                        <td></td>
+                        <td style="{{ $blankRowHeightStyle }}"></td>
+                        <td style="{{ $blankRowHeightStyle }}"></td>
                     @endforeach
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td style="{{ $blankRowHeightStyle }}"></td>
+                    <td style="{{ $blankRowHeightStyle }}"></td>
+                    <td style="{{ $blankRowHeightStyle }}"></td>
+                    <td style="{{ $blankRowHeightStyle }}"></td>
                 </tr>
             @endfor
         </tbody>
     </table>
 </div>
+
+@if(! $loop->last)
+    <div class="page-break"></div>
+@endif
+@endforeach
 </body>
 </html>

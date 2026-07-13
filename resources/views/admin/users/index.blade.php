@@ -8,6 +8,7 @@
     $addBag = $errors->getBag('add');
     $editBag = $errors->getBag('edit');
     $roles = \App\Models\User::ROLES;
+    $hasUnitHead = \App\Models\User::where('role', 'unit_head')->exists();
 @endphp
 <script>
 document.addEventListener('alpine:init', () => {
@@ -15,6 +16,7 @@ document.addEventListener('alpine:init', () => {
         addOpen: {{ $addBag->any() ? 'true' : 'false' }},
         editOpen: {{ $editBag->any() ? 'true' : 'false' }},
         deleteOpen: false,
+        hasUnitHead: @js($hasUnitHead),
 
         addSingle: {
             name: @js(old('name', '')),
@@ -210,7 +212,7 @@ document.addEventListener('alpine:init', () => {
             @csrf
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Full Name</label>
+<label class="text-sm font-medium">Full Name <span class="text-red-600">*</span></label>
                 <input
                     name="name"
                     x-model="addSingle.name"
@@ -225,7 +227,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Email</label>
+<label class="text-sm font-medium">Email <span class="text-red-600">*</span></label>
                 <input
                     name="email"
                     type="email"
@@ -241,7 +243,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Role</label>
+<label class="text-sm font-medium">Role <span class="text-red-600">*</span></label>
                 <select
                     name="role"
                     x-model="addSingle.role"
@@ -249,14 +251,24 @@ document.addEventListener('alpine:init', () => {
                     required
                 >
                     @foreach($roles as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                        <option
+                            value="{{ $value }}"
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                disabled
+                            @endif
+                        >
+                            {{ $label }}
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                (Already Assigned)
+                            @endif
+                        </option>
                     @endforeach
                 </select>
                 <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="addSingle.roleError" x-text="addSingle.roleError"></div>
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Password</label>
+<label class="text-sm font-medium">Password <span class="text-red-600">*</span></label>
                 <input
                     name="password"
                     type="password"
@@ -269,7 +281,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Confirm Password</label>
+<label class="text-sm font-medium">Confirm Password <span class="text-red-600">*</span></label>
                 <input
                     name="password_confirmation"
                     type="password"
@@ -300,7 +312,7 @@ document.addEventListener('alpine:init', () => {
             <input type="hidden" name="editing_id" :value="editUser.id">
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Full Name</label>
+<label class="text-sm font-medium">Full Name <span class="text-red-600">*</span></label>
                 <input
                     name="name"
                     x-model="editUser.name"
@@ -314,7 +326,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Email</label>
+<label class="text-sm font-medium">Email <span class="text-red-600">*</span></label>
                 <input
                     name="email"
                     type="email"
@@ -329,7 +341,7 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Role</label>
+<label class="text-sm font-medium">Role <span class="text-red-600">*</span></label>
                 <select
                     name="role"
                     x-model="editUser.role"
@@ -337,7 +349,18 @@ document.addEventListener('alpine:init', () => {
                     required
                 >
                     @foreach($roles as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                        <option
+                            value="{{ $value }}"
+                            @if($value === 'unit_head')
+                                :disabled="hasUnitHead && editUser.role !== 'unit_head'"
+                            @endif
+                        >
+                            {{ $label }}
+
+                            @if($value === 'unit_head' && $hasUnitHead)
+                                (Already Assigned)
+                            @endif
+                        </option>
                     @endforeach
                 </select>
                 <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editUser.roleError" x-text="editUser.roleError"></div>

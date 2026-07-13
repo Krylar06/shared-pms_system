@@ -8,10 +8,35 @@
     {{-- Apply saved theme BEFORE paint, to avoid a flash of the wrong colors --}}
     <script>
         (function () {
-            const saved = localStorage.getItem('theme') || 'system';
-            const isDark = saved === 'dark' ||
-                (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            document.documentElement.classList.toggle('dark', isDark);
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+            function savedTheme() {
+                return localStorage.getItem('theme') || 'system';
+            }
+
+            function shouldUseDark(mode) {
+                return mode === 'dark' || (mode === 'system' && mediaQuery.matches);
+            }
+
+            window.getSavedTheme = function () {
+                return savedTheme();
+            };
+
+            window.setTheme = function (mode) {
+                localStorage.setItem('theme', mode);
+                document.documentElement.classList.toggle('dark', shouldUseDark(mode));
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: mode } }));
+            };
+
+            window.setTheme(savedTheme());
+
+            if (mediaQuery.addEventListener) {
+                mediaQuery.addEventListener('change', function () {
+                    if (savedTheme() === 'system') {
+                        window.setTheme('system');
+                    }
+                });
+            }
         })();
     </script>
 
@@ -20,10 +45,130 @@
 
     <style>
         [x-cloak] { display: none !important; }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global dark mode safety layer
+        |--------------------------------------------------------------------------
+        | This makes the dark-mode toggle affect pages that still use light-only
+        | Tailwind classes after the GitHub merge. It is intentionally global so
+        | every admin page becomes readable in dark mode without editing each Blade.
+        */
+        html.dark {
+            color-scheme: dark;
+        }
+
+        html.dark body,
+        html.dark main {
+            background-color: #0f172a !important;
+            color: #e5e7eb !important;
+        }
+
+        html.dark .bg-white {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark .bg-gray-50 {
+            background-color: #111827 !important;
+        }
+
+        html.dark .bg-gray-100 {
+            background-color: #374151 !important;
+        }
+
+        html.dark .bg-gray-200 {
+            background-color: #4b5563 !important;
+        }
+
+        html.dark .border-gray-100,
+        html.dark .border-gray-200,
+        html.dark .border-gray-300 {
+            border-color: #374151 !important;
+        }
+
+        html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+            border-color: #374151 !important;
+        }
+
+        html.dark .text-gray-400 {
+            color: #9ca3af !important;
+        }
+
+        html.dark .text-gray-500,
+        html.dark .text-gray-600 {
+            color: #d1d5db !important;
+        }
+
+        html.dark .text-gray-700,
+        html.dark .text-gray-800,
+        html.dark .text-gray-900 {
+            color: #f9fafb !important;
+        }
+
+        html.dark input,
+        html.dark select,
+        html.dark textarea {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f9fafb !important;
+        }
+
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        html.dark select option {
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+        }
+
+        html.dark table thead,
+        html.dark thead.bg-gray-50 {
+            background-color: #111827 !important;
+            color: #d1d5db !important;
+        }
+
+        html.dark tbody tr:hover,
+        html.dark .hover\:bg-gray-50:hover {
+            background-color: rgba(55, 65, 81, 0.55) !important;
+        }
+
+        html.dark .shadow-sm,
+        html.dark .shadow,
+        html.dark .shadow-md,
+        html.dark .shadow-lg,
+        html.dark .shadow-xl {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html.dark .hover\:bg-gray-100:hover,
+        html.dark .hover\:bg-gray-200:hover {
+            background-color: #4b5563 !important;
+        }
+
+        html.dark .hover\:text-blue-600:hover,
+        html.dark .text-blue-600,
+        html.dark .text-blue-700 {
+            color: #60a5fa !important;
+        }
+
+        html.dark .rounded-2xl.bg-white,
+        html.dark .rounded-xl.bg-white,
+        html.dark .rounded-lg.bg-white {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark .modal,
+        html.dark [role="dialog"] {
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+        }
+
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-900 antialiased dark:bg-gray-900 dark:text-gray-100">
+<body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden dark:bg-gray-900 dark:text-gray-100">
 <div
     x-data="{
         sidebarOpen: false,
@@ -87,14 +232,14 @@
                 </a>
 
                 <a
-                    href="{{ route('admin.colleges.index') }}"
+                    href="{{ route('admin.locations.index') }}"
                     class="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
-                    {{ request()->routeIs('admin.colleges.*') || request()->routeIs('admin.offices.*') || request()->routeIs('admin.staff.*') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+                    {{ request()->routeIs('admin.locations.*') || request()->routeIs('admin.offices.*') || request()->routeIs('admin.staff.*') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                 >
-                    <svg class="w-5 h-5 {{ request()->routeIs('admin.colleges.*') || request()->routeIs('admin.offices.*') || request()->routeIs('admin.staff.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 {{ request()->routeIs('admin.locations.*') || request()->routeIs('admin.offices.*') || request()->routeIs('admin.staff.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
-                    <span>Colleges</span>
+                    <span>Locations</span>
                 </a>
 
                 <a
@@ -115,6 +260,20 @@
                     {{ request()->routeIs('admin.reports.*') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                 >
                     <svg class="w-5 h-5 {{ request()->routeIs('admin.reports.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {{ request()->routeIs('admin.reports.*')
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                    }}"
+                >
+                    <svg
+                        class="w-5 h-5 {{ request()->routeIs('admin.reports.*')
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200'
+                        }}"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-6m4 6V7m4 10v-3M5 19h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     <span>Reports</span>
@@ -212,7 +371,7 @@
                     <h1 class="truncate text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                         @yield('page_title', 'Admin')
                         @if(trim($__env->yieldContent('breadcrumbs')))
-                            <nav class="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                            <nav class="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                               @yield('breadcrumbs')
                             </nav>
                     @endif
@@ -314,6 +473,34 @@
                                 </div>
                             </div>
                         <div class="py-2">
+                            <div class="py-2">
+                                <a
+                                    href="{{ route('admin.devices.index') }}"
+                                    class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    Device Manager
+                                </a>
+
+                                <a
+                                    href="{{ route('admin.reports.index') }}"
+                                    class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    Reports
+                                </a>
+
+                                <a
+                                    href="{{ route('admin.reports.checklist') }}"
+                                    class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    Checklist
+                                </a>
+
+                                <a
+                                    href="{{ route('admin.change-password') }}"
+                                    class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    Change Password
+                                </a>
 
                             <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">Dashboard</a>
                             <a href="{{ route('admin.devices.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">Device Manager</a>
@@ -321,12 +508,14 @@
                             <a href="{{ route('admin.scanner') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">QR Scanner</a>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700">
+                                    <button
+                                        type="submit"
+                                        class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                    >
                                         Sign out
                                     </button>
                                 </form>
                             </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -348,6 +537,7 @@
             @yield('content')
         </main>
     </div>
+</div>
 </div>
 
 @stack('scripts')
