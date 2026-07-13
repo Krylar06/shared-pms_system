@@ -268,27 +268,44 @@ document.addEventListener('alpine:init', () => {
             </div>
 
             <div>
-<label class="text-sm font-medium">Password <span class="text-red-600">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password
+                </label>
+
                 <input
-                    name="password"
                     type="password"
+                    name="password"
                     x-model="addSingle.password"
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     required
                     minlength="8"
+                    autocomplete="new-password"
+                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="Enter password"
                 >
-                <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="addSingle.passwordError" x-text="addSingle.passwordError"></div>
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Use at least 8 characters with uppercase, lowercase, and a special character.
+                </p>
+
+                <template x-if="addSingle.passwordError">
+                    <p class="mt-1 text-sm text-red-600" x-text="addSingle.passwordError"></p>
+                </template>
             </div>
 
             <div>
-<label class="text-sm font-medium">Confirm Password <span class="text-red-600">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Confirm Password
+                </label>
+
                 <input
-                    name="password_confirmation"
                     type="password"
+                    name="password_confirmation"
                     x-model="addSingle.password_confirmation"
-                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     required
                     minlength="8"
+                    autocomplete="new-password"
+                    class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="Re-enter password"
                 >
             </div>
 
