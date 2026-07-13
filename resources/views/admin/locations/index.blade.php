@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Colleges')
-@section('page_title', 'Colleges')
+@section('title', 'Locations')
+@section('page_title', 'Locations')
 
 @section('content')
 @php
@@ -24,7 +24,7 @@
 @endphp
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('collegeManager', () => ({
+    Alpine.data('locationManager', () => ({
         addOpen: {{ $addBag->any() ? 'true' : 'false' }},
         editOpen: {{ $editBag->any() ? 'true' : 'false' }},
         deleteOpen: false,
@@ -39,14 +39,14 @@ document.addEventListener('alpine:init', () => {
 
         bulkRows: @json($bulkRowsSeed),
 
-        editCollege: {
+        editLocation: {
             id: @js(old('editing_id') !== null ? (int) old('editing_id') : null),
             name: @js(old('name', '')),
             code: @js(old('code', '')),
             nameError: @js($editBag->first('name')),
             codeError: @js($editBag->first('code'))
         },
-        deleteCollegeId: null,
+        deleteLocationId: null,
 
         openAdd() {
             this.addOpen = true;
@@ -70,11 +70,11 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        openEdit(college) {
-            this.editCollege = {
-                id: college.id,
-                name: college.name,
-                code: college.code,
+        openEdit(location) {
+            this.editLocation = {
+                id: location.id,
+                name: location.name,
+                code: location.code,
                 nameError: '',
                 codeError: ''
             };
@@ -82,7 +82,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         openDelete(id) {
-            this.deleteCollegeId = id;
+            this.deleteLocationId = id;
             this.deleteOpen = true;
             this.$nextTick(() => this.$refs.confirmDeleteBtn && this.$refs.confirmDeleteBtn.focus());
         }
@@ -90,7 +90,7 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 <div
-    x-data="collegeManager"
+    x-data="locationManager"
     class="space-y-5"
 >
 
@@ -98,7 +98,7 @@ document.addEventListener('alpine:init', () => {
     {{-- Top section --}}
     <div class="flex items-start justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Colleges</h1>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Locations</h1>
         </div>
 
         @if(auth()->user()->isAdmin())
@@ -107,14 +107,14 @@ document.addEventListener('alpine:init', () => {
                 class="shrink-0 inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                 @click="openAdd()"
             >
-                + Add College
+                + Add Location
             </button>
         @endif
     </div>
 
     {{-- Mobile cards --}}
     <div class="grid grid-cols-1 gap-3 md:hidden">
-        @forelse ($colleges as $c)
+        @forelse ($locations as $c)
             <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <div class="space-y-3">
                     <div>
@@ -158,7 +158,7 @@ document.addEventListener('alpine:init', () => {
             </div>
         @empty
             <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                No colleges found.
+                No locations found.
             </div>
         @endforelse
     </div>
@@ -175,7 +175,7 @@ document.addEventListener('alpine:init', () => {
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @forelse ($colleges as $c)
+                    @forelse ($locations as $c)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                             <td class="px-4 py-3">
                                 <a
@@ -219,7 +219,7 @@ document.addEventListener('alpine:init', () => {
                     @empty
                         <tr>
                             <td colspan="3" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                No colleges found.
+                                No locations found.
                             </td>
                         </tr>
                     @endforelse
@@ -229,16 +229,16 @@ document.addEventListener('alpine:init', () => {
     </div>
 
     <div>
-        {{ $colleges->links() }}
+        {{ $locations->links() }}
     </div>
 
     {{-- Add modal --}}
-    <x-modal show="addOpen" title="Add College">
-        <form method="POST" action="{{ route('admin.colleges.store') }}" class="space-y-3">
+    <x-modal show="addOpen" title="Add Location">
+        <form method="POST" action="{{ route('admin.locations.store') }}" class="space-y-3">
             @csrf
 
             <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add multiple colleges</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add multiple locations</span>
                 <button
                     type="button"
                     class="rounded-lg px-3 py-1.5 text-sm font-medium border"
@@ -279,7 +279,7 @@ document.addEventListener('alpine:init', () => {
                         <template x-for="(row, idx) in bulkRows" :key="idx">
                             <div class="space-y-3" :class="idx > 0 ? 'pt-4 border-t border-gray-200 dark:border-gray-700' : ''">
                                 <div>
-                                    <label class="text-sm font-medium dark:text-gray-300">College Name <span class="text-red-500">*</span></label>
+                                    <label class="text-sm font-medium dark:text-gray-300">Location Name <span class="text-red-600">*</span></label>
                                     <input
                                         :name="`names[${idx}]`"
                                         x-model="row.name"
@@ -288,19 +288,20 @@ document.addEventListener('alpine:init', () => {
                                         maxlength="150"
                                         pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&'\-\(\)\s]*"
                                         title="Letters, numbers, and basic punctuation only"
-                                        placeholder="e.g. College of Science"
+                                        placeholder="e.g. Location of Science"
                                     >
                                     <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="row.nameError" x-text="row.nameError"></div>
                                 </div>
 
                                 <div>
-                                    <label class="text-sm font-medium dark:text-gray-300">Code (optional)</label>
+                                    <label class="text-sm font-medium dark:text-gray-300">Code <span class="text-red-600">*</span></label>
                                     <input
                                         :name="`codes[${idx}]`"
                                         x-model="row.code"
                                         class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        required
                                         maxlength="20"
-                                        pattern="[A-Za-z0-9\-]*"
+                                        pattern="[A-Za-z0-9\-]+"
                                         title="Letters, numbers, and hyphens only (no spaces)"
                                         placeholder="e.g. COS"
                                         @input="row.code = row.code.toUpperCase().replace(/[^A-Z0-9\-]/g, '')"
@@ -316,7 +317,7 @@ document.addEventListener('alpine:init', () => {
                 <template x-if="!bulkEnabled">
                     <div class="space-y-3">
                         <div>
-                            <label class="text-sm font-medium dark:text-gray-300">College Name <span class="text-red-500">*</span></label>
+                            <label class="text-sm font-medium dark:text-gray-300">Location Name <span class="text-red-600">*</span></label>
                             <input
                                 name="name"
                                 x-model="addSingle.name"
@@ -325,19 +326,20 @@ document.addEventListener('alpine:init', () => {
                                 maxlength="150"
                                 pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&'\-\(\)\s]*"
                                 title="Letters, numbers, and basic punctuation only"
-                                placeholder="e.g. College of Science"
+                                placeholder="e.g. Location of Science"
                             >
                             <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="addSingle.nameError" x-text="addSingle.nameError"></div>
                         </div>
 
                         <div>
-                            <label class="text-sm font-medium dark:text-gray-300">Code (optional)</label>
+                            <label class="text-sm font-medium dark:text-gray-300">Code <span class="text-red-600">*</span></label>
                             <input
                                 name="code"
                                 x-model="addSingle.code"
                                 class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                required
                                 maxlength="20"
-                                pattern="[A-Za-z0-9\-]*"
+                                pattern="[A-Za-z0-9\-]+"
                                 title="Letters, numbers, and hyphens only (no spaces)"
                                 placeholder="e.g. COS"
                                 @input="addSingle.code = addSingle.code.toUpperCase().replace(/[^A-Z0-9\-]/g, '')"
@@ -362,44 +364,45 @@ document.addEventListener('alpine:init', () => {
 
 
     {{-- Edit modal --}}
-    <x-modal show="editOpen" title="Edit College" >
+    <x-modal show="editOpen" title="Edit Location" >
         <form
             method="POST"
-            action="{{ route('admin.colleges.update', '__ID__') }}"
-            x-bind:action="'{{ route('admin.colleges.update', '__ID__') }}'.replace('__ID__', editCollege.id)"
+            action="{{ route('admin.locations.update', '__ID__') }}"
+            x-bind:action="'{{ route('admin.locations.update', '__ID__') }}'.replace('__ID__', editLocation.id)"
             class="space-y-3"
         >
             @csrf
             @method('PUT')
 
-            <input type="hidden" name="editing_id" :value="editCollege.id">
+            <input type="hidden" name="editing_id" :value="editLocation.id">
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">College Name <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium dark:text-gray-300">Location Name <span class="text-red-600">*</span></label>
                 <input
                     name="name"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    x-model="editCollege.name"
+                    x-model="editLocation.name"
                     required
                     maxlength="150"
                     pattern="[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&'\-\(\)\s]*"
                     title="Letters, numbers, and basic punctuation only"
                 >
-                <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editCollege.nameError" x-text="editCollege.nameError"></div>
+                <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editLocation.nameError" x-text="editLocation.nameError"></div>
             </div>
 
             <div>
-                <label class="text-sm font-medium dark:text-gray-300">Code (optional)</label>
+                <label class="text-sm font-medium dark:text-gray-300">Code <span class="text-red-600">*</span></label>
                 <input
                     name="code"
                     class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    x-model="editCollege.code"
+                    x-model="editLocation.code"
+                    required
                     maxlength="20"
-                    pattern="[A-Za-z0-9\-]*"
+                    pattern="[A-Za-z0-9\-]+"
                     title="Letters, numbers, and hyphens only (no spaces)"
-                    @input="editCollege.code = editCollege.code.toUpperCase().replace(/[^A-Z0-9\-]/g, '')"
+                    @input="editLocation.code = editLocation.code.toUpperCase().replace(/[^A-Z0-9\-]/g, '')"
                 >
-                <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editCollege.codeError" x-text="editCollege.codeError"></div>
+                <div class="mt-1 text-sm text-red-600 dark:text-red-400" x-show="editLocation.codeError" x-text="editLocation.codeError"></div>
             </div>
 
             <div class="flex gap-2 pt-2">
@@ -412,18 +415,18 @@ document.addEventListener('alpine:init', () => {
     </x-modal>
 
     {{-- Delete modal --}}
-    <x-modal show="deleteOpen" title="Delete College">
+    <x-modal show="deleteOpen" title="Delete Location">
         <div class="space-y-3">
             <div class="text-sm text-gray-700 dark:text-gray-300">
-                Are you sure you want to delete this college?
+                Are you sure you want to delete this location?
             </div>
 
 
 
             <form
                 method="POST"
-                :action="`{{ route('admin.colleges.destroy', ['college' => '__ID__']) }}`.replace('__ID__', deleteCollegeId)"
-                @submit="if (!deleteCollegeId) $event.preventDefault()"
+                :action="`{{ route('admin.locations.destroy', ['location' => '__ID__']) }}`.replace('__ID__', deleteLocationId)"
+                @submit="if (!deleteLocationId) $event.preventDefault()"
                 class="flex gap-2"
             >
 

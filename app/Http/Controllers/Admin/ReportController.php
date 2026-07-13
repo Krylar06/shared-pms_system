@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\College;
+use App\Models\Location;
 use App\Models\Device;
 use App\Models\DeviceMaintenanceRecord;
 use App\Models\DeviceType;
@@ -31,10 +31,11 @@ class ReportController extends Controller
         return view('admin.reports.assets', array_merge([
             'devices' => $devices,
             'selectedTypeId' => $request->integer('type_id'),
-            'selectedCollegeId' => $request->integer('college_id'),
+            'selectedLocationId' => ($request->integer('location_id') ?: $request->integer('college_id')),
+            'selectedCollegeId' => ($request->integer('location_id') ?: $request->integer('college_id')), // backward-compatible variable for existing report views,
             'selectedOfficeId' => $request->integer('office_id'),
             'q' => $request->string('q')->toString(),
-        ], $this->filterOptions($request->integer('college_id') ?: null)));
+        ], $this->filterOptions(($request->integer('location_id') ?: $request->integer('college_id')) ?: null)));
     }
 
     public function accounts(Request $request)
@@ -113,15 +114,18 @@ class ReportController extends Controller
     {
         $record->load([
             'device.type',
-            'device.currentAssignment.staff.office.college',
+            'device.currentAssignment.staff.office.location',
             'checkedBy',
         ]);
 
         abort_if(! $record->device, 404);
 
+        $unitHead = User::where('role', User::ROLE_UNIT_HEAD)->first();
+
         $pdf = Pdf::loadView('admin.reports.checked-equipment-pdf', [
             'record' => $record,
             'device' => $record->device,
+            'unitHead' => $unitHead,
             'checklistItems' => $this->checklistItems(),
             'softwareItems' => $this->softwareItems(),
         ])->setPaper([0, 0, 612, 936], 'landscape');
@@ -145,7 +149,7 @@ class ReportController extends Controller
         $records = DeviceMaintenanceRecord::query()
             ->with([
                 'device.type',
-                'device.currentAssignment.staff.office.college',
+                'device.currentAssignment.staff.office.location',
                 'checkedBy',
             ])
             ->whereNotNull('checked_by')
@@ -156,8 +160,11 @@ class ReportController extends Controller
 
         abort_if($records->isEmpty(), 404);
 
+        $unitHead = User::where('role', User::ROLE_UNIT_HEAD)->first();
+
         $pdf = Pdf::loadView('admin.reports.checked-equipment-pdf', [
             'records' => $records,
+            'unitHead' => $unitHead,
             'checklistItems' => $this->checklistItems(),
             'softwareItems' => $this->softwareItems(),
         ])->setPaper([0, 0, 612, 936], 'landscape');
@@ -174,11 +181,12 @@ class ReportController extends Controller
         return view('admin.reports.checklist', array_merge([
             'devices' => $devices,
             'selectedTypeId' => $request->integer('type_id'),
-            'selectedCollegeId' => $request->integer('college_id'),
+            'selectedLocationId' => ($request->integer('location_id') ?: $request->integer('college_id')),
+            'selectedCollegeId' => ($request->integer('location_id') ?: $request->integer('college_id')), // backward-compatible variable for existing report views,
             'selectedOfficeId' => $request->integer('office_id'),
             'q' => $request->string('q')->toString(),
             'generatedAt' => now(),
-        ], $this->filterOptions($request->integer('college_id') ?: null)));
+        ], $this->filterOptions(($request->integer('location_id') ?: $request->integer('college_id')) ?: null)));
     }
 
     private function checkedEquipmentQuery(Request $request)
@@ -192,7 +200,7 @@ class ReportController extends Controller
         return DeviceMaintenanceRecord::query()
             ->with([
                 'device.type',
-                'device.currentAssignment.staff.office.college',
+                'device.currentAssignment.staff.office.location',
                 'checkedBy',
             ])
             ->whereNotNull('checked_by')
@@ -219,20 +227,20 @@ class ReportController extends Controller
     private function filteredAssetsQuery(Request $request)
     {
         $typeId = $request->integer('type_id') ?: null;
-        $collegeId = $request->integer('college_id') ?: null;
+        $locationId = ($request->integer('location_id') ?: $request->integer('college_id')) ?: null;
         $officeId = $request->integer('office_id') ?: null;
         $q = $request->string('q')->toString();
 
         return Device::query()
             ->with([
                 'type',
-                'currentAssignment.staff.office.college',
+                'currentAssignment.staff.office.location',
                 'latestMaintenanceRecord.checkedBy',
             ])
             ->when($typeId, fn ($query) => $query->where('device_type_id', $typeId))
-            ->when($collegeId, function ($query) use ($collegeId) {
-                $query->whereHas('currentAssignment.staff.office', function ($officeQuery) use ($collegeId) {
-                    $officeQuery->where('college_id', $collegeId);
+            ->when($locationId, function ($query) use ($locationId) {
+                $query->whereHas('currentAssignment.staff.office', function ($officeQuery) use ($locationId) {
+                    $officeQuery->where('location_id', $locationId);
                 });
             })
             ->when($officeId, function ($query) use ($officeId) {
@@ -252,13 +260,14 @@ class ReportController extends Controller
             });
     }
 
-    private function filterOptions(?int $collegeId = null): array
+    private function filterOptions(?int $locationId = null): array
     {
         return [
             'types' => DeviceType::orderBy('name')->get(),
-            'colleges' => College::orderBy('name')->get(),
-            'offices' => Office::with('college')
-                ->when($collegeId, fn ($query) => $query->where('college_id', $collegeId))
+            'locations' => Location::orderBy('name')->get(),
+            'colleges' => Location::orderBy('name')->get(), // backward-compatible variable for existing report views,
+            'offices' => Office::with('location')
+                ->when($locationId, fn ($query) => $query->where('location_id', $locationId))
                 ->orderBy('name')
                 ->get(),
         ];
@@ -269,27 +278,27 @@ class ReportController extends Controller
         return [
             'system_unit_power_on' => [
                 'group' => 'System Unit',
-                'label' => 'Check for power on',
+                'label' => 'Check for<br>power on',
             ],
             'monitor_display' => [
                 'group' => 'Monitor',
-                'label' => 'Check display',
+                'label' => 'Check<br>display',
             ],
             'keyboard_keys' => [
                 'group' => 'Keyboard',
-                'label' => 'Check for keys',
+                'label' => 'Check for<br>keys',
             ],
             'mouse_buttons' => [
                 'group' => 'Mouse',
-                'label' => 'Check mouse left/right buttons',
+                'label' => 'Check<br>mouse<br>left/right<br>buttons',
             ],
             'avr_ups_power_recovery' => [
                 'group' => 'AVR/UPS',
-                'label' => 'Check for power recovery',
+                'label' => 'Check for<br>power<br>recovery',
             ],
             'printer_printout' => [
                 'group' => 'Printer',
-                'label' => 'Check printout',
+                'label' => 'Check<br>printout',
             ],
         ];
     }
