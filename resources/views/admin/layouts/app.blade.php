@@ -237,7 +237,9 @@
                     {{ request()->routeIs('admin.locations.*') || request()->routeIs('admin.offices.*') || request()->routeIs('admin.staff.*') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                 >
                     <svg class="w-5 h-5 {{ request()->routeIs('admin.locations.*') || request()->routeIs('admin.offices.*') || request()->routeIs('admin.staff.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"  d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/>
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
                     <span>Locations</span>
                 </a>
