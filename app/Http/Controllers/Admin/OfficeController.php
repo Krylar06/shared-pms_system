@@ -13,6 +13,31 @@ class OfficeController extends Controller
 {
     private const NAME_REGEX = '/^[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&\'\-\(\)\s]*$/u';
 
+    private function buildSummary(Office $office): array
+    {
+        $office->loadMissing('location');
+
+        return [
+            'office' => $office->name,
+            'location' => optional($office->location)->name,
+        ];
+    }
+
+    private function buildCreateSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
+    private function buildUpdateSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
+    private function buildDeleteSummary(Office $office): array
+    {
+        return $this->buildSummary($office);
+    }
+
     public function index(Location $location)
     {
         $offices = Office::where('location_id', $location->id)->orderBy('name')->paginate(15);
@@ -65,14 +90,30 @@ class OfficeController extends Controller
                 'names.*' => 'office name',
             ]);
 
+            $items = [];
+
             foreach (range(0, $count - 1) as $i) {
+
                 $office = Office::create([
                     'location_id' => $location->id,
                     'name' => $data['names'][$i],
                 ]);
 
-                ActivityLog::record('created', "Created office \"{$office->name}\" in \"{$location->name}\" (bulk add)", $office);
+                $items[] = [
+                    'summary' => $this->buildCreateSummary($office),
+                ];
             }
+
+            ActivityLog::record(
+                'created',
+                "Created {$count} office(s) (Bulk Add)",
+                null,
+                ActivityLog::makePayload([
+                    'bulk' => true,
+                    'record_type' => 'Office',
+                    'items' => $items,
+                ])
+            );
 
             return back()->with('success', 'Offices created.');
         }
@@ -96,7 +137,14 @@ class OfficeController extends Controller
             'name' => $data['name'],
         ]);
 
-        ActivityLog::record('created', "Created office \"{$office->name}\" in \"{$location->name}\"", $office);
+        ActivityLog::record(
+            'created',
+            "Created office \"{$office->name}\"",
+            $office,
+            ActivityLog::makePayload(
+                $this->buildCreateSummary($office)
+            )
+        );
 
         return back()->with('success', 'Office created.');
     }
@@ -124,9 +172,28 @@ class OfficeController extends Controller
             'name.unique' => 'This office name already exists in this location.',
         ]);
 
+        $before = [
+            'office' => $office->name,
+            'location' => optional($office->location)->name,
+        ];
+
         $office->update($data);
 
-        ActivityLog::record('updated', "Updated office \"{$office->name}\" in \"{$location->name}\"", $office);
+        ActivityLog::record(
+            'updated',
+            "Updated office \"{$office->name}\"",
+            $office,
+            ActivityLog::makePayload(
+                $this->buildUpdateSummary($office),
+                ActivityLog::buildChanges(
+                    $before,
+                    [
+                        'office' => $office->name,
+                        'location' => optional($office->location)->name,
+                    ]
+                )
+            )
+        );
 
         return redirect()->route('admin.offices.index', $location)->with('success', 'Office updated.');
     }
@@ -135,9 +202,16 @@ class OfficeController extends Controller
     {
         abort_unless($office->location_id === $location->id, 404);
         $name = $office->name;
-        $office->delete();
+        $summary = $this->buildDeleteSummary($office);
 
-        ActivityLog::record('deleted', "Deleted office \"{$name}\" from \"{$location->name}\"");
+        ActivityLog::record(
+            'deleted',
+            "Deleted office \"{$name}\"",
+            $office,
+            ActivityLog::makePayload($summary)
+        );
+
+        $office->delete();
 
         return back()->with('success', 'Office deleted.');
     }

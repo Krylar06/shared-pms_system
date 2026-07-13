@@ -64,7 +64,7 @@ class StaffDeviceController extends Controller
             ->whereDoesntHave('currentAssignment')
             ->first();
 
-        if (! $device) {
+        if (!$device) {
             return back()
                 ->withErrors([
                     'device_id' => 'This device is not available or has already been issued.',
@@ -84,9 +84,61 @@ class StaffDeviceController extends Controller
             'status' => 'issued',
         ]);
 
-        ActivityLog::record('issued', "Issued device \"{$device->property_number}\" to {$staff->first_name} {$staff->last_name}", $device);
+        $type = strtolower(optional($device->type)->name ?? '');
 
+        $summary = [
+            'device' => $device->property_number,
+            'device_type' => optional($device->type)->name,
+        ];
+
+        if (in_array($type, ['desktop', 'laptop'])) {
+            $summary['computer_name'] = $device->computer_name;
+        }
+
+        $summary += [
+            'brand' => $device->brand,
+            'issued_to' => trim($staff->first_name . ' ' . $staff->last_name),
+            'office' => optional($staff->office)->name,
+            'location' => optional(optional($staff->office)->location)->name,
+            'status' => 'Available → Issued',
+            'issued_by' => Auth::user()->name,
+            'issued_at' => now()->format('M d, Y h:i A'),
+        ];
+
+        if (filled($data['remarks'] ?? null)) {
+            $summary['remarks'] = $data['remarks'];
+        }
+
+        ActivityLog::record(
+            'issued',
+            "Issued device \"{$device->property_number}\"",
+            $device,
+            $this->makeSummaryPayload($summary, ['status'])
+        );
         return back()->with('success', 'Device issued successfully.');
+    }
+
+    /**
+     * Build an ActivityLog "changes" payload where specific fields are
+     * flagged as new (renders the (New) badge) without touching the
+     * separate field-diff "changes" section, which stays empty on purpose
+     * for Issue/Return logs.
+     */
+    private function makeSummaryPayload(array $summary, array $newFields = []): array
+    {
+        $normalized = [];
+
+        foreach ($summary as $field => $value) {
+            $normalized[$field] = [
+                'value' => $value,
+                'is_new' => in_array($field, $newFields, true),
+            ];
+        }
+
+        return [
+            'summary' => $normalized,
+            'changes' => [],
+        ];
     }
 
     public function return(Staff $staff, DeviceAssignment $assignment)
@@ -108,7 +160,33 @@ class StaffDeviceController extends Controller
                 'status' => 'available',
             ]);
 
-            ActivityLog::record('returned', "Returned device \"{$assignment->device->property_number}\" from {$staff->first_name} {$staff->last_name}", $assignment->device);
+            $type = strtolower(optional($assignment->device->type)->name ?? '');
+
+            $summary = [
+                'device' => $assignment->device->property_number,
+                'device_type' => optional($assignment->device->type)->name,
+            ];
+
+            if (in_array($type, ['desktop', 'laptop'])) {
+                $summary['computer_name'] = $assignment->device->computer_name;
+            }
+
+            $summary += [
+                'brand' => $assignment->device->brand,
+                'returned_from' => trim($staff->first_name . ' ' . $staff->last_name),
+                'office' => optional($staff->office)->name,
+                'location' => optional(optional($staff->office)->location)->name,
+                'status' => 'Issued → Available',
+                'returned_by' => Auth::user()->name,
+                'returned_at' => now()->format('M d, Y h:i A'),
+            ];
+
+            ActivityLog::record(
+                'returned',
+                "Returned device \"{$assignment->device->property_number}\"",
+                $assignment->device,
+                $this->makeSummaryPayload($summary, ['status'])
+            );
         }
 
         return back()->with('success', 'Device returned successfully.');

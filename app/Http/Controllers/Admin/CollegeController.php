@@ -13,6 +13,35 @@ class CollegeController extends Controller
     private const NAME_REGEX = '/^[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&\'\-\(\)\s]*$/u';
     private const CODE_REGEX = '/^[A-Za-z0-9\-]+$/';
 
+private function buildSummary(College $college, bool $includeEmptyOptional = false): array
+{
+    $summary = [
+        'college' => $college->name,
+        'code' => $college->code,
+    ];
+
+    if (!$includeEmptyOptional && empty($summary['code'])) {
+        unset($summary['code']);
+    }
+
+    return $summary;
+}
+
+private function buildCreateSummary(College $college): array
+{
+    return $this->buildSummary($college);
+}
+
+private function buildUpdateSummary(College $college): array
+{
+    return $this->buildSummary($college);
+}
+
+private function buildDeleteSummary(College $college): array
+{
+    return $this->buildSummary($college, true);
+}
+
     public function index()
     {
         $colleges = College::orderBy('name')->paginate(15);
@@ -81,21 +110,37 @@ class CollegeController extends Controller
             ]);
 
 
-        // If any code is duplicated, Laravel will redirect back with validation errors.
-        // We also ensure the message is consistent for both single and bulk modes.
+            // If any code is duplicated, Laravel will redirect back with validation errors.
+            // We also ensure the message is consistent for both single and bulk modes.
 
 
-            foreach (range(0, $count - 1) as $i) {
-                $code = $data['codes'][$i] ?? null;
-                $code = $code === '' ? null : $code;
+            $bulkItems = [];
 
-                $college = College::create([
-                    'name' => $data['names'][$i],
-                    'code' => $code,
-                ]);
+foreach (range(0, $count - 1) as $i) {
 
-                ActivityLog::record('created', "Created college \"{$college->name}\" (bulk add)", $college);
-            }
+    $code = $data['codes'][$i] ?? null;
+    $code = $code === '' ? null : $code;
+
+    $college = College::create([
+        'name' => $data['names'][$i],
+        'code' => $code,
+    ]);
+
+    $bulkItems[] = [
+    'summary' => $this->buildCreateSummary($college),
+];
+}
+
+ActivityLog::record(
+    'created',
+    "Created {$count} college(s) (Bulk Add)",
+    null,
+    ActivityLog::makePayload([
+        'bulk' => true,
+        'record_type' => 'College',
+        'items' => $bulkItems,
+    ])
+);
 
             return redirect()->route('admin.colleges.index')->with('success', 'Colleges created.');
 
@@ -126,7 +171,14 @@ class CollegeController extends Controller
             'code' => $code,
         ]);
 
-        ActivityLog::record('created', "Created college \"{$college->name}\"", $college);
+        ActivityLog::record(
+            'created',
+            "Created college \"{$college->name}\"",
+            $college,
+            ActivityLog::makePayload(
+    $this->buildCreateSummary($college)
+)
+        );
 
         return redirect()->route('admin.colleges.index')->with('success', 'College created.');
     }
@@ -156,22 +208,50 @@ class CollegeController extends Controller
         $code = $data['code'] ?? null;
         $code = $code === '' ? null : $code;
 
+        $before = [
+    'college' => $college->name,
+    'code' => $college->code,
+];
+
         $college->update([
             'name' => $data['name'],
             'code' => $code,
         ]);
 
-        ActivityLog::record('updated', "Updated college \"{$college->name}\"", $college);
+        ActivityLog::record(
+    'updated',
+    "Updated college \"{$college->name}\"",
+    $college,
+    ActivityLog::makePayload(
+        $this->buildUpdateSummary($college),
+        ActivityLog::buildChanges(
+            $before,
+            [
+                'college' => $college->name,
+                'code' => $college->code,
+            ]
+        )
+    )
+);
 
-        return redirect()->route('admin.colleges.index')->with('success', 'College updated.');
+        return redirect()->route('admin.colleges.index')
+            ->with('success', 'College updated.');
     }
 
     public function destroy(College $college)
     {
-        $name = $college->name;
-        $college->delete();
+        $summary = $this->buildDeleteSummary($college);
 
-        ActivityLog::record('deleted', "Deleted college \"{$name}\"");
+        $name = $college->name;
+
+        ActivityLog::record(
+            'deleted',
+            "Deleted college \"{$name}\"",
+            $college,
+            ActivityLog::makePayload($summary)
+        );
+
+        $college->delete();
 
         return redirect()->route('admin.colleges.index')->with('success', 'College deleted.');
     }

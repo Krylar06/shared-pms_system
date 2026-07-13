@@ -13,6 +13,14 @@ class LocationController extends Controller
     private const NAME_REGEX = '/^[A-Za-zÑñ0-9][A-Za-zÑñ0-9.,&\'\-\(\)\s]*$/u';
     private const CODE_REGEX = '/^[A-Za-z0-9\-]+$/';
 
+    private function buildSummary(Location $location): array
+    {
+        return [
+            'name' => $location->name,
+            'code' => $location->code,
+        ];
+    }
+
     public function index()
     {
         $locations = Location::orderBy('name')->paginate(15);
@@ -41,7 +49,7 @@ class LocationController extends Controller
             for ($i = 0; $i < $count; $i++) {
                 $rules["names.$i"] = ['required', 'string', 'max:150', 'regex:' . self::NAME_REGEX];
                 $rules["codes.$i"] = [
-                    'nullable',
+                    'required',
                     'string',
                     'max:20',
                     'regex:' . self::CODE_REGEX,
@@ -71,6 +79,7 @@ class LocationController extends Controller
                 'names.*.string' => 'The location name must be text.',
                 'names.*.max' => 'The location name may not be longer than 150 characters.',
                 'names.*.regex' => 'The location name contains invalid characters.',
+                'codes.*.required' => 'The code is required.',
                 'codes.*.string' => 'The code must be text.',
                 'codes.*.max' => 'The code may not be longer than 20 characters.',
                 'codes.*.regex' => 'The code may only contain letters, numbers, and hyphens.',
@@ -84,6 +93,7 @@ class LocationController extends Controller
         // If any code is duplicated, Laravel will redirect back with validation errors.
         // We also ensure the message is consistent for both single and bulk modes.
 
+            $items = [];
 
             foreach (range(0, $count - 1) as $i) {
                 $code = $data['codes'][$i] ?? null;
@@ -94,8 +104,21 @@ class LocationController extends Controller
                     'code' => $code,
                 ]);
 
-                ActivityLog::record('created', "Created location \"{$location->name}\" (bulk add)", $location);
+                $items[] = [
+                    'summary' => $this->buildSummary($location),
+                ];
             }
+
+            ActivityLog::record(
+                'created',
+                "Created {$count} location(s) (Bulk Add)",
+                null,
+                ActivityLog::makePayload([
+                    'bulk' => true,
+                    'record_type' => 'Location',
+                    'items' => $items,
+                ])
+            );
 
             return redirect()->route('admin.locations.index')->with('success', 'Locations created.');
 
@@ -106,7 +129,7 @@ class LocationController extends Controller
         $data = $request->validateWithBag('add', [
             'name' => ['required', 'string', 'max:150', 'regex:' . self::NAME_REGEX],
             'code' => [
-                'nullable',
+                'required',
                 'string',
                 'max:20',
                 'regex:' . self::CODE_REGEX,
@@ -114,19 +137,24 @@ class LocationController extends Controller
             ],
         ], [
             'name.regex' => 'The location name contains invalid characters.',
+            'code.required' => 'The code is required.',
             'code.regex' => 'The code may only contain letters, numbers, and hyphens.',
         ]);
 
 
-        $code = $data['code'] ?? null;
-        $code = $code === '' ? null : $code;
+        $code = $data['code'];
 
         $location = Location::create([
             'name' => $data['name'],
             'code' => $code,
         ]);
 
-        ActivityLog::record('created', "Created location \"{$location->name}\"", $location);
+        ActivityLog::record(
+            'created',
+            "Created location \"{$location->name}\"",
+            $location,
+            ActivityLog::makePayload($this->buildSummary($location))
+        );
 
         return redirect()->route('admin.locations.index')->with('success', 'Location created.');
     }
@@ -141,7 +169,7 @@ class LocationController extends Controller
         $data = $request->validateWithBag('edit', [
             'name' => ['required', 'string', 'max:150', 'regex:' . self::NAME_REGEX],
             'code' => [
-                'nullable',
+                'required',
                 'string',
                 'max:20',
                 'regex:' . self::CODE_REGEX,
@@ -149,19 +177,29 @@ class LocationController extends Controller
             ],
         ], [
             'name.regex' => 'The location name contains invalid characters.',
+            'code.required' => 'The code is required.',
             'code.regex' => 'The code may only contain letters, numbers, and hyphens.',
         ]);
 
 
-        $code = $data['code'] ?? null;
-        $code = $code === '' ? null : $code;
+        $code = $data['code'];
+
+        $before = $this->buildSummary($location);
 
         $location->update([
             'name' => $data['name'],
             'code' => $code,
         ]);
 
-        ActivityLog::record('updated', "Updated location \"{$location->name}\"", $location);
+        ActivityLog::record(
+            'updated',
+            "Updated location \"{$location->name}\"",
+            $location,
+            ActivityLog::makePayload(
+                $this->buildSummary($location),
+                ActivityLog::buildChanges($before, $this->buildSummary($location))
+            )
+        );
 
         return redirect()->route('admin.locations.index')->with('success', 'Location updated.');
     }
@@ -169,9 +207,16 @@ class LocationController extends Controller
     public function destroy(Location $location)
     {
         $name = $location->name;
-        $location->delete();
+        $summary = $this->buildSummary($location);
 
-        ActivityLog::record('deleted', "Deleted location \"{$name}\"");
+        ActivityLog::record(
+            'deleted',
+            "Deleted location \"{$name}\"",
+            $location,
+            ActivityLog::makePayload($summary)
+        );
+
+        $location->delete();
 
         return redirect()->route('admin.locations.index')->with('success', 'Location deleted.');
     }
