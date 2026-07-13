@@ -7,14 +7,20 @@ use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    /**
-     * Usage: ->middleware('role:admin') or ->middleware('role:admin,custodian')
-     */
     public function handle(Request $request, Closure $next, string ...$roles)
     {
-        $user = $request->user();
+        if (! auth()->check()) {
+            abort(403);
+        }
 
-        if (! $user || ! in_array($user->role, $roles, true)) {
+        $userRole = auth()->user()->role;
+
+        // Unit Head has the same permission as Admin.
+        if ($userRole === 'unit_head') {
+            $userRole = 'admin';
+        }
+
+        if (! in_array($userRole, $roles, true)) {
             abort(403);
         }
 

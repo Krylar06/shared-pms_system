@@ -63,10 +63,10 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
 
 /*
 |--------------------------------------------------------------------------
-| Protected Routes — shared by both roles (admin + custodian)
+| Protected Routes — shared by admin, custodian, and unit_head
 |--------------------------------------------------------------------------
 | Devices, issuing/returning devices, reports, dashboard, scanner, and
-| browsing the location/office/staff directory are everyday tasks for both
+| browsing the location/office/staff directory are everyday tasks for these
 | roles. Org-structure changes (creating/editing/deleting locations,
 | offices, staff) and user management are admin-only — see the nested
 | 'role:admin' group further below.
